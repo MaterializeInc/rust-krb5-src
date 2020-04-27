@@ -1,0 +1,20 @@
+[package]
+name = "krb5-src"
+authors = ["Materialize, Inc."]
+readme = "README.md"
+description = "Build system integration for libkrb5, MIT's Kerberos implementation."
+documentation = "https://docs.rs/krb5-src"
+repository = "https://github.com/MaterializeInc/rust-krb5-src"
+license = "Apache-2.0"
+categories = ["external-ffi-bindings"]
+version = "0.1.0+1.18.1"
+edition = "2018"
+
+[dependencies]
+openssl-sys = "0.9.55"
+
+[build-dependencies]
+duct = "0.13.3"
+
+[features]
+openssl-vendored = ["openssl-sys/vendored"]

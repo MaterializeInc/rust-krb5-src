@@ -1,0 +1,570 @@
+                   Kerberos Version 5, Release 1.18
+
+                            Release Notes
+                        The MIT Kerberos Team
+
+Copyright and Other Notices
+---------------------------
+
+Copyright (C) 1985-2020 by the Massachusetts Institute of Technology
+and its contributors.  All rights reserved.
+
+Please see the file named NOTICE for additional notices.
+
+Documentation
+-------------
+
+Unified documentation for Kerberos V5 is available in both HTML and
+PDF formats.  The table of contents of the HTML format documentation
+is at doc/html/index.html, and the PDF format documentation is in the
+doc/pdf directory.
+
+Additionally, you may find copies of the HTML format documentation
+online at
+
+    https://web.mit.edu/kerberos/krb5-latest/doc/
+
+for the most recent supported release, or at
+
+    https://web.mit.edu/kerberos/krb5-devel/doc/
+
+for the release under development.
+
+More information about Kerberos may be found at
+
+    https://web.mit.edu/kerberos/
+
+and at the MIT Kerberos Consortium web site
+
+    https://kerberos.org/
+
+Building and Installing Kerberos 5
+----------------------------------
+
+Build documentation is in doc/html/build/index.html or
+doc/pdf/build.pdf.
+
+The installation guide is in doc/html/admin/install.html or
+doc/pdf/install.pdf.
+
+If you are attempting to build under Windows, please see the
+src/windows/README file.
+
+Reporting Bugs
+--------------
+
+Please report any problems/bugs/comments by sending email to
+krb5-bugs@mit.edu.
+
+You may view bug reports by visiting
+
+https://krbdev.mit.edu/rt/
+
+and using the "Guest Login" button.  Please note that the web
+interface to our bug database is read-only for guests, and the primary
+way to interact with our bug database is via email.
+
+DES no longer supported
+-----------------------
+
+Beginning with the krb5-1.18 release, single-DES encryption types are
+no longer supported.
+
+Major changes in 1.18.1 (2020-04-13)
+------------------------------------
+
+This is a bug fix release.
+
+* Fix a crash when qualifying short hostnames when the system has no
+  primary DNS domain.
+
+* Fix a regression when an application imports "service@" as a GSS
+  host-based name for its acceptor credential handle.
+
+* Fix KDC enforcement of auth indicators when they are modified by the
+  KDB module.
+
+* Fix removal of require_auth string attributes when the LDAP KDB
+  module is used.
+
+* Fix a compile error when building with musl libc on Linux.
+
+* Fix a compile error when building with gcc 4.x.
+
+* Change the KDC constrained delegation precedence order for
+  consistency with Windows KDCs.
+
+krb5-1.18.1 changes by ticket ID
+--------------------------------
+
+8876    Fix AS-REQ checking of KDB-modified indicators
+8877    Cannot remove require_auth attribute with LDAP KDB module
+8880    Fix Linux build error with musl libc
+8881    Segfault in k5_primary_domain
+8884    Change KDC constrained-delegation precedence order
+8886    Document client keytab usage
+8888    compile failure on red hat 6
+8891    Codespell report for "krb5" (on fossies.org)
+8894    Correct formatting of trace log microseconds
+8895    ksu does not honor KRB5CCNAME
+8896    Fix typo in SPAKE modprinc example
+
+
+Major changes in 1.18 (2019-02-12)
+----------------------------------
+
+Administrator experience:
+
+* Remove support for single-DES encryption types.
+
+* Change the replay cache format to be more efficient and robust.
+  Replay cache filenames using the new format end with ".rcache2" by
+  default.
+
+* setuid programs will automatically ignore environment variables that
+  normally affect krb5 API functions, even if the caller does not use
+  krb5_init_secure_context().
+
+* Add an "enforce_ok_as_delegate" krb5.conf relation to disable
+  credential forwarding during GSSAPI authentication unless the KDC
+  sets the ok-as-delegate bit in the service ticket.
+
+* Use the permitted_enctypes krb5.conf setting as the default value
+  for default_tkt_enctypes and default_tgs_enctypes.
+
+Developer experience:
+
+* Implement krb5_cc_remove_cred() for all credential cache types.
+
+* Add the krb5_pac_get_client_info() API to get the client account
+  name from a PAC.
+
+Protocol evolution:
+
+* Add KDC support for S4U2Self requests where the user is identified
+  by X.509 certificate.  (Requires support for certificate lookup from
+  a third-party KDB module.)
+
+* Remove support for an old ("draft 9") variant of PKINIT.
+
+* Add support for Microsoft NegoEx.  (Requires one or more third-party
+  GSS modules implementing NegoEx mechanisms.)
+
+* Honor the transited-policy-checked ticket flag on application
+  servers, eliminating the requirement to configure capaths on
+  servers in some scenarios.
+
+User experience:
+
+* Add support for "dns_canonicalize_hostname=fallback""`, causing
+  host-based principal names to be tried first without DNS
+  canonicalization, and again with DNS canonicalization if the
+  un-canonicalized server is not found.
+
+* Expand single-component hostnames in host-based principal names when
+  DNS canonicalization is not used, adding the system's first DNS
+  search path as a suffix.  Add a "qualify_shortname" krb5.conf
+  relation to override this suffix or disable expansion.
+
+Code quality:
+
+* The libkrb5 serialization code (used to export and import krb5 GSS
+  security contexts) has been simplified and made type-safe.
+
+* The libkrb5 code for creating KRB-PRIV, KRB-SAFE, and KRB-CRED
+  messages has been revised to conform to current coding practices.
+
+* The test suite has been modified to work with macOS System Integrity
+  Protection enabled.
+
+* The test suite incorporates soft-pkcs11 so that PKINIT PKCS11
+  support can always be tested.
+
+krb5-1.18 changes by ticket ID
+------------------------------
+
+5891    kdb_ldap should treat entries with "nsAccountLock: true" as locked
+7135    gssapi mechanism glue dlcloses objects potentially after they are already unloaded
+7765    Some ccache functions not exported
+7871    KDC should not fail requests due to forwardable/proxiable option
+8349    use __APPLE_USE_RFC_3542 to get IPV6_PKTINFO on Mac OS X
+8761    ksu doesn't allow acquisition of non-forwardable tickets
+8764    get_creds can add redundant cache entry for referral ticket
+8765    Add dns_canonicalize_hostname=fallback support
+8773    Mark deprecated enctypes when used
+8775    Process SPNEGO error tokens through mech
+8777    S4U2Self with X.509 certificate bugs
+8778    Add new kvno protocol transition options
+8780    Expand S4U2Self exception in KDC lineage check
+8781    Add KDC support for X.509 S4U2Self requests
+8784    Use better name type for PKINIT KDC certs
+8785    Use memory replay cache for DO_TIME auth contexts
+8786    Hash-based replay cache implementation
+8788    Rename configure.in to configure.ac
+8791    Add option to build without libkeyutils
+8792    Implement krb5_cc_remove_cred for remaining types
+8793    Remove srvtab support
+8794    Remove kadmin RPC support for setting v4 key
+8795    configure: chech for libncursesw, if libncurses is not found
+8798    Remove ovsec_adm_export dump format support
+8799    Check more errors in OpenSSL crypto backend
+8800    Add secure_getenv() support
+8804    Remove checksum type profile variables
+8805    Modernize example enctypes in documentation
+8806    kdb5_util errors on command arguments matching command names
+8807    Set a more modern default ksu CMD_PATH
+8808    Remove single-DES support
+8811    In klist, display ticket server if different
+8812    Remove support for no-flags SAM-2 preauth
+8815    Verify PAC client name independently of name-type
+8816    kproplog cannot display LOCKDOWN_KEYS attribute
+8817    Remove PKINIT draft 9 support
+8819    gss_set_allowable_enctypes() fails if any enctypes aren't recognized
+8823    Allow the KDB to see and modify auth indicators
+8827    Change definition of KRB5_KDB_FLAG_CROSS_REALM
+8828    Add API to get client account name from PAC
+8829    Fix authdata signatures for non-TGT AS-REQs
+8833    Add environment variable for GSS mech config
+8842    Record start time of AS requests earlier in KDC
+8843    Allow client canonicalization in non-krbtgt AS-REP
+8844    SPNEGO should filter mechs on acceptor with gss_acquire_cred()
+8845    SPNEGO init/accept output parameter bugs
+8847    Add enforce_ok_as_delegate setting
+8849    Install gssapi/gssapi_alloc.h properly
+8851    NegoEx
+8855    Qualify short hostnames when not using DNS
+8856    segfault in krb5-1.17.1/src/lib/krb5/krb/authdata.c
+8857    Don't warn in kadmin when no policy is specified
+8858    Do not always canonicalize enterprise principals
+8859    Remove KRB5_KDB_FLAG_ALIAS_OK
+8860    Allow kprop over NATs
+8861    Fix LDAP policy enforcement of pw_expiration
+8864    Fix error handling in gssint_mechglue_init()
+8865    Check cross-realm TGT name for RBCD requests
+8866    Fix S4U client authdata handling
+8867    Fix KDC crash in handle_signticket
+8868    Allow cross-realm RBCD with PAC and other authdata
+8869    Apply permitted_enctypes to KDC request enctypes
+8870    Honor transited-policy-checked flag in servers
+8872    Put KDB authdata first
+8873    Don't assume OpenSSL failures are memory errors
+8874    Always use S4U2Proxy second ticket parsed authdata
+
+Acknowledgements
+----------------
+
+Past Sponsors of the MIT Kerberos Consortium:
+
+    Apple
+    Carnegie Mellon University
+    Centrify Corporation
+    Columbia University
+    Cornell University
+    The Department of Defense of the United States of America (DoD)
+    Fidelity Investments
+    Google
+    Iowa State University
+    MIT
+    Michigan State University
+    Microsoft
+    MITRE Corporation
+    Morgan-Stanley
+    The National Aeronautics and Space Administration
+        of the United States of America (NASA)
+    Network Appliance (NetApp)
+    Nippon Telephone and Telegraph (NTT)
+    US Government Office of the National Coordinator for Health
+        Information Technology (ONC)
+    Oracle
+    Pennsylvania State University
+    Red Hat
+    Stanford University
+    TeamF1, Inc.
+    The University of Alaska
+    The University of Michigan
+    The University of Pennsylvania
+
+Past and present members of the Kerberos Team at MIT:
+
+    Danilo Almeida
+    Jeffrey Altman
+    Justin Anderson
+    Richard Basch
+    Mitch Berger
+    Jay Berkenbilt
+    Andrew Boardman
+    Bill Bryant
+    Steve Buckley
+    Joe Calzaretta
+    John Carr
+    Mark Colan
+    Don Davis
+    Sarah Day
+    Alexandra Ellwood
+    Carlos Garay
+    Dan Geer
+    Nancy Gilman
+    Matt Hancher
+    Thomas Hardjono
+    Sam Hartman
+    Paul Hill
+    Marc Horowitz
+    Eva Jacobus
+    Miroslav Jurisic
+    Barry Jaspan
+    Benjamin Kaduk
+    Geoffrey King
+    Kevin Koch
+    John Kohl
+    HaoQi Li
+    Jonathan Lin
+    Peter Litwack
+    Scott McGuire
+    Steve Miller
+    Kevin Mitchell
+    Cliff Neuman
+    Paul Park
+    Ezra Peisach
+    Chris Provenzano
+    Ken Raeburn
+    Jon Rochlis
+    Jeff Schiller
+    Jen Selby
+    Robert Silk
+    Bill Sommerfeld
+    Jennifer Steiner
+    Ralph Swick
+    Brad Thompson
+    Harry Tsai
+    Zhanna Tsitkova
+    Ted Ts'o
+    Marshall Vale
+    Taylor Yu
+
+The following external contributors have provided code, patches, bug
+reports, suggestions, and valuable resources:
+
+    Ian Abbott
+    Brandon Allbery
+    Russell Allbery
+    Brian Almeida
+    Michael B Allen
+    Pooja Anil
+    Jeffrey Arbuckle
+    Heinz-Ado Arnolds
+    Derek Atkins
+    Mark Bannister
+    David Bantz
+    Alex Baule
+    David Benjamin
+    Thomas Bernard
+    Adam Bernstein
+    Arlene Berry
+    Jeff Blaine
+    Toby Blake
+    Radoslav Bodo
+    Sumit Bose
+    Emmanuel Bouillon
+    Isaac Boukris
+    Philip Brown
+    Samuel Cabrero
+    Michael Calmer
+    Andrea Campi
+    Julien Chaffraix
+    Puran Chand
+    Ravi Channavajhala
+    Srinivas Cheruku
+    Leonardo Chiquitto
+    Seemant Choudhary
+    Howard Chu
+    Andrea Cirulli
+    Christopher D. Clausen
+    Kevin Coffman
+    Simon Cooper
+    Sylvain Cortes
+    Ian Crowther
+    Arran Cudbard-Bell
+    Jeff D'Angelo
+    Nalin Dahyabhai
+    Mark Davies
+    Dennis Davis
+    Alex Dehnert
+    Mark Deneen
+    Günther Deschner
+    John Devitofranceschi
+    Marc Dionne
+    Roland Dowdeswell
+    Dorian Ducournau
+    Viktor Dukhovni
+    Jason Edgecombe
+    Mark Eichin
+    Shawn M. Emery
+    Douglas E. Engert
+    Peter Eriksson
+    Juha Erkkilä
+    Gilles Espinasse
+    Ronni Feldt
+    Bill Fellows
+    JC Ferguson
+    Remi Ferrand
+    Paul Fertser
+    Fabiano Fidêncio
+    Frank Filz
+    William Fiveash
+    Jacques Florent
+    Ákos Frohner
+    Sebastian Galiano
+    Marcus Granado
+    Dylan Gray
+    Norm Green
+    Scott Grizzard
+    Helmut Grohne
+    Steve Grubb
+    Philip Guenther
+    Timo Gurr
+    Dominic Hargreaves
+    Robbie Harwood
+    John Hascall
+    Jakob Haufe
+    Matthieu Hautreux
+    Jochen Hein
+    Paul B. Henson
+    Jeff Hodges
+    Christopher Hogan
+    Love Hörnquist Åstrand
+    Ken Hornstein
+    Henry B. Hotz
+    Luke Howard
+    Jakub Hrozek
+    Shumon Huque
+    Jeffrey Hutzelman
+    Sergey Ilinykh
+    Wyllys Ingersoll
+    Holger Isenberg
+    Spencer Jackson
+    Diogenes S. Jesus
+    Pavel Jindra
+    Brian Johannesmeyer
+    Joel Johnson
+    Lutz Justen
+    Alexander Karaivanov
+    Anders Kaseorg
+    Bar Katz
+    Zentaro Kavanagh
+    Mubashir Kazia
+    W. Trevor King
+    Patrik Kis
+    Martin Kittel
+    Thomas Klausner
+    Matthew Krupcale
+    Mikkel Kruse
+    Reinhard Kugler
+    Tomas Kuthan
+    Pierre Labastie
+    Andreas Ladanyi
+    Chris Leick
+    Volker Lendecke
+    Jan iankko Lieskovsky
+    Todd Lipcon
+    Oliver Loch
+    Chris Long
+    Kevin Longfellow
+    Frank Lonigro
+    Jon Looney
+    Nuno Lopes
+    Todd Lubin
+    Ryan Lynch
+    Glenn Machin
+    Roland Mainz
+    Sorin Manolache
+    Robert Marshall
+    Andrei Maslennikov
+    Michael Mattioli
+    Nathaniel McCallum
+    Greg McClement
+    Cameron Meadors
+    Alexey Melnikov
+    Franklyn Mendez
+    Markus Moeller
+    Kyle Moffett
+    Paul Moore
+    Keiichi Mori
+    Michael Morony
+    Zbysek Mraz
+    Edward Murrell
+    Nikos Nikoleris
+    Felipe Ortega
+    Michael Osipov
+    Andrej Ota
+    Dmitri Pal
+    Javier Palacios
+    Dilyan Palauzov
+    Tom Parker
+    Eric Pauly
+    Ezra Peisach
+    Alejandro Perez
+    Zoran Pericic
+    W. Michael Petullo
+    Mark Phalan
+    Sharwan Ram
+    Brett Randall
+    Jonathan Reams
+    Jonathan Reed
+    Robert Relyea
+    Tony Reix
+    Martin Rex
+    Pat Riehecky
+    Jason Rogers
+    Matt Rogers
+    Nate Rosenblum
+    Solly Ross
+    Mike Roszkowski
+    Guillaume Rousse
+    Joshua Schaeffer
+    Jens Schleusener
+    Andreas Schneider
+    Paul Seyfert
+    Tom Shaw
+    Jim Shi
+    Jerry Shipman
+    Peter Shoults
+    Richard Silverman
+    Cel Skeggs
+    Simo Sorce
+    Michael Spang
+    Michael Ströder
+    Bjørn Tore Sund
+    Joe Travaglini
+    Tim Uglow
+    Rathor Vipin
+    Denis Vlasenko
+    Jorgen Wahlsten
+    Stef Walter
+    Max (Weijun) Wang
+    John Washington
+    Stef Walter
+    Xi Wang
+    Nehal J Wani
+    Kevin Wasserman
+    Margaret Wasserman
+    Marcus Watts
+    Andreas Wiese
+    Simon Wilkinson
+    Nicolas Williams
+    Ross Wilper
+    Augustin Wolf
+    Garrett Wollman
+    David Woodhouse
+    Tsu-Phong Wu
+    Xu Qiang
+    Neng Xue
+    Zhaomo Yang
+    Nickolai Zeldovich
+    Bean Zhang
+    Hanz van Zijst
+    Gertjan Zwartjes
+
+The above is not an exhaustive list; many others have contributed in
+various ways to the MIT Kerberos development effort over the years.
+Other acknowledgments (for bug reports and patches) are in the
+doc/CHANGES file.
