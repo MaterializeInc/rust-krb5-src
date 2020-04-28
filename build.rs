@@ -30,18 +30,25 @@ fn main() {
 
     // Configure.
     {
+        let mut cppflags = env::var("CPPFLAGS").ok().unwrap_or_else(String::new);
+        let mut cflags = env::var("CFLAGS").ok().unwrap_or_else(String::new);
+
+        // Some platforms require that we explicitly request
+        // position-independent code in our static libraries.
+        cflags += " -fPIC";
+
+        // If OpenSSL has been vendored, point libkrb5 at the vendored headers.
+        if let Ok(openssl_root) = env::var("DEP_OPENSSL_ROOT") {
+            cppflags += &format!(" -I{}", Path::new(&openssl_root).join("include").display());
+        }
+
         let mut configure_args = vec![
             format!("--prefix={}", install_dir.display()),
             "--enable-static".into(),
             "--disable-shared".into(),
+            format!("CPPFLAGS={}", cppflags),
+            format!("CFLAGS={}", cflags),
         ];
-
-        // If OpenSSL has been vendored, point libkrb5 at the vendored headers.
-        if let Ok(openssl_root) = env::var("DEP_OPENSSL_ROOT") {
-            let mut cppflags = env::var("CPPFLAGS").ok().unwrap_or_else(String::new);
-            cppflags += &format!(" -I{}", Path::new(&openssl_root).join("include").display());
-            configure_args.push(format!("CPPFLAGS={}", cppflags));
-        }
 
         // If we're cross-compiling, let configure know.
         if host != target {
