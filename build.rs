@@ -111,4 +111,6 @@ fn main() {
             }
         }
     }
+
+    println!("cargo:root={}", install_dir.display());
 }

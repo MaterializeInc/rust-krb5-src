@@ -16,15 +16,36 @@
 //! Build system integration for [libkrb5], MIT's Kerberos implementation.
 //!
 //! This crate builds a vendored copy of libkrb5 using Cargo's support for
-//! custom build scripts. It is not intended for direct consumption, but
-//! as a dependency for other crates that need libkrb5 available, like
-//! [sasl2-sys].
+//! custom build scripts. It is not intended for direct consumption, but as a
+//! dependency for other crates that need libkrb5 available, like [sasl2-sys].
 //!
 //! krb5-src is currently bundling libkrb5 [v1.18.1].
+//!
+//! To use this crate, declare a `dependency` or `dev-dependency` on `krb5-src`.
+//! Then, in the build script for your crate, the environment variable
+//! `DEP_KRB5_SRC_ROOT` will point to the directory in which the bundled copy of
+//! libkrb5 has been installed. You can build and link another C library against
+//! this copy of libkrb5, or generate Rust bindings and link Rust code against
+//! this copy of libkrb5.
+//!
+//! Note that you are responsible for instructing Cargo to link in the
+//! components of libkrb5 that you depend upon. Here is an example build script
+//! fragment.
+//!
+//! ```no_run
+//! # use std::env;
+//! # use std::path::PathBuf;
+//! println!(
+//!     "cargo:rustc-link-search=native={}",
+//!     PathBuf::from(env::var("DEP_KRB5_SRC_ROOT").unwrap()).join("lib").display(),
+//! );
+//! println!("cargo:rustc-link-lib=static=gssapi_krb5");
+//! println!("cargo:rustc-link-lib=static=krb5");
+//! println!("cargo:rustc-link-lib=static=k5crypto");
+//! println!("cargo:rustc-link-lib=static=com_err");
+//! println!("cargo:rustc-link-lib=static=krb5support");
+//! ```
 //!
 //! [libkrb5]: https://web.mit.edu/kerberos/
 //! [v1.18.1]: https://web.mit.edu/kerberos/krb5-1.18/
 //! [sasl2-sys]: https://github.com/MaterializeInc/rust-sasl
-
-/// The directory in which the vendored copy of libkrb5 has been installed.
-pub const INSTALL_DIR: &str = concat!(env!("OUT_DIR"), "/install");
