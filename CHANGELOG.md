@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to [Semantic
 Versioning].
 
+## Unreleased
+
+* Introduce the `binaries` Cargo feature which, when enabled, will build the
+  binaries that ship with libkrb5 (kinit, kdestroy, etc.) and install into the
+  output directory.
+
 ## [0.2.0+1.18.1] - 2020-04-28
 
 * Permit cross-compilation by requiring that krb5-src be used as a normal

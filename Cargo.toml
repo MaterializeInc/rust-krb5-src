@@ -21,4 +21,5 @@ openssl-sys = "0.9.55"
 duct = "0.13.3"
 
 [features]
+binaries = []
 openssl-vendored = ["openssl-sys/vendored"]
