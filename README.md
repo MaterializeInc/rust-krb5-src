@@ -17,4 +17,4 @@ krb5-src = "0.2.0+1.18.1"
 ```
 
 [libkrb5]: https://web.mit.edu/kerberos/
-[docs]: https://docs.rs/krb5-src/0.2.0+1.18.1/krb5_src
+[docs]: https://docs.rs/krb5-src/0.2.1+1.18.1/krb5_src
