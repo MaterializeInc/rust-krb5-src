@@ -101,6 +101,10 @@ fn main() {
             "util/verto",
             "include",
             "lib",
+            #[cfg(feature = "binaries")]
+            "plugins/kdb/db2",
+            #[cfg(feature = "binaries")]
+            "clients",
         ] {
             for target in &["all", "install"] {
                 cmd!("make", target)

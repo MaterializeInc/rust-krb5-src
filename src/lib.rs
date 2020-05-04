@@ -46,6 +46,15 @@
 //! println!("cargo:rustc-link-lib=static=krb5support");
 //! ```
 //!
+//! ## Cargo features
+//!
+//! krb5-src can be configured with the following Cargo features:
+//!
+//! * **`binaries`** builds the binaries that come with libkrb5 (kinit,
+//!   kdestroy, et al.) and installs them into `DEP_KRB5_SRC_ROOT/bin`.
+//! * **`openssl-vendored`** enables the `vendored` feature of the `openssl-sys`
+//!   crate.
+//!
 //! [libkrb5]: https://web.mit.edu/kerberos/
 //! [v1.18.1]: https://web.mit.edu/kerberos/krb5-1.18/
 //! [sasl2-sys]: https://github.com/MaterializeInc/rust-sasl

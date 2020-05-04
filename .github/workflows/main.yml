@@ -11,6 +11,7 @@ jobs:
         build:
         - ubuntu
         - ubuntu-old
+        - ubuntu-binaries
         - ubuntu-openssl-vendored
         - macos
         - macos-openssl-vendored
@@ -21,6 +22,10 @@ jobs:
           - build: ubuntu-old
             os: ubuntu-16.04
             rust: stable
+          - build: ubuntu-binaries
+            os: ubuntu-latest
+            rust: stable
+            features: binaries
           - build: ubuntu-openssl-vendored
             os: ubuntu-latest
             rust: stable
