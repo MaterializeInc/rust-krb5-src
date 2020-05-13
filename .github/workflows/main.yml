@@ -38,6 +38,8 @@ jobs:
             rust: stable
             features: openssl-vendored
     steps:
+    - if: contains(matrix.os, 'ubuntu')
+      run: sudo apt-get install -y yasm
     - uses: actions/checkout@v1
     - name: Install Rust (rustup)
       run: rustup update ${{ matrix.rust }} --no-self-update && rustup default ${{ matrix.rust }}
