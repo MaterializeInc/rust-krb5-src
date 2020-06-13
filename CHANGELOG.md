@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to [Semantic
 Versioning].
 
+## Unreleased - 2020-06-13
+
+* Fix detection of `ar` tool when cross compiling.
+
 ## [0.2.2+1.18.1] - 2020-05-23
 
 * Configure libkrb5 with `--disable-aesni`, which disables use of the AES-NI
