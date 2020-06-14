@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to [Semantic
 Versioning].
 
-## Unreleased - 2020-06-13
+## [0.2.3+1.18.2] - 2020-06-13
 
 * Fix detection of `ar` tool when cross compiling.
 
@@ -47,6 +47,7 @@ Initial release.
 [0.2.0+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.1.1+1.18.1...v0.2.0+1.18.1
 [0.2.1+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.0+1.18.1...v0.2.1+1.18.1
 [0.2.2+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.1+1.18.1...v0.2.2+1.18.1
+[0.2.3+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.2+1.18.1...v0.2.3+1.18.2
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
