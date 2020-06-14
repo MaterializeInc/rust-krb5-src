@@ -9,6 +9,8 @@ Versioning].
 
 * Fix detection of `ar` tool when cross compiling.
 
+* Upgrade to libkrb5 v1.18.2.
+
 ## [0.2.2+1.18.1] - 2020-05-23
 
 * Configure libkrb5 with `--disable-aesni`, which disables use of the AES-NI
