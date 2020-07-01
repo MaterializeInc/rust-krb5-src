@@ -4,6 +4,8 @@ on: [push, pull_request]
 jobs:
   test:
     name: test
+    env:
+      RUST_BACKTRACE: full
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
