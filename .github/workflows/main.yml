@@ -37,6 +37,13 @@ jobs:
             os: macos-latest
             rust: stable
             features: openssl-vendored
+          - build: windows
+            os: windows-latest
+            rust: stable
+          - build: windows
+            os: windows-latest
+            rust: stable
+            features: openssl-vendored
     steps:
     - if: contains(matrix.os, 'ubuntu')
       run: sudo apt-get install -y yasm
