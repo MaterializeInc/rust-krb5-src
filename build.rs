@@ -49,6 +49,10 @@ fn main() {
             // AES-NI support appears to be broken (perhaps related to static
             // libraries?). See #4.
             "--disable-aesni".into(),
+            #[cfg(feature = "nls")]
+            "--enable-nls".into(),
+            #[cfg(not(feature = "nls"))]
+            "--disable-nls".into(),
             format!("CPPFLAGS={}", cppflags),
             format!("CFLAGS={}", cflags),
         ];

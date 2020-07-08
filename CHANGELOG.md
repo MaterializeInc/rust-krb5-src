@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to [Semantic
 Versioning].
 
+## Unreleased
+
+* Disable native language support (NLS) by default, since it complicates linking
+  on some platforms.
+
 ## [0.2.3+1.18.2] - 2020-06-13
 
 * Fix detection of `ar` tool when cross compiling.
