@@ -52,6 +52,13 @@
 //!
 //! * **`binaries`** builds the binaries that come with libkrb5 (kinit,
 //!   kdestroy, et al.) and installs them into `DEP_KRB5_SRC_ROOT/bin`.
+//!
+//! * **`nls`** enables native language support (i.e., localization). This
+//!   feature corresponds to the `--enable-nls` configure flag.
+//!
+//!   On some platforms, when this feature is enabled, the application must
+//!   additionally link against libintl.
+//!
 //! * **`openssl-vendored`** enables the `vendored` feature of the `openssl-sys`
 //!   crate.
 //!
