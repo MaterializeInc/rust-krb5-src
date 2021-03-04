@@ -42,7 +42,7 @@ fn main() {
             cppflags += &format!(" -I{}", Path::new(&openssl_root).join("include").display());
         }
 
-        let mut configure_args = vec![
+        let configure_args = vec![
             format!("--prefix={}", install_dir.display()),
             "--enable-static".into(),
             "--disable-shared".into(),
@@ -55,12 +55,9 @@ fn main() {
             "--disable-nls".into(),
             format!("CPPFLAGS={}", cppflags),
             format!("CFLAGS={}", cflags),
+            format!("--host={}", host),
+            format!("--build={}", target),
         ];
-
-        // If we're cross-compiling, let configure know.
-        if host != target {
-            configure_args.push(format!("--host={}", target));
-        }
 
         let configure_path = Path::new("krb5").join("src").join("configure");
         cmd(configure_path, &configure_args)
