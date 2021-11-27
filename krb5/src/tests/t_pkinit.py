@@ -130,6 +130,9 @@ realm.run([kvno, realm.host_princ])
 out = realm.run(['./adata', realm.host_princ])
 if '97:' in out:
     fail('auth indicators seen in anonymous PKINIT ticket')
+# Verify start_realm setting and test referrals TGS request.
+realm.run([klist, '-C'], expected_msg='start_realm = KRBTEST.COM')
+realm.run([kvno, '-S', 'host', hostname])
 
 # Test anonymous kadmin.
 mark('anonymous kadmin')
@@ -179,6 +182,13 @@ realm.kinit(realm.user_princ,
             expected_trace=msgs)
 realm.klist(realm.user_princ)
 realm.run([kvno, realm.host_princ])
+
+# Try using multiple configured pkinit_identities, to make sure we
+# fall back to the second one when the first one cannot be read.
+id_conf = {'realms': {'$realm': {'pkinit_identities': [file_identity + 'X',
+                                                       file_identity]}}}
+id_env = realm.special_env('idconf', False, krb5_conf=id_conf)
+realm.kinit(realm.user_princ, expected_trace=msgs, env=id_env)
 
 # Try again using RSA instead of DH.
 mark('FILE identity, no password, RSA')
@@ -248,10 +258,13 @@ realm.run(['./adata', realm.host_princ],
 # supplied by the responder.
 # Supply the response in raw form.
 mark('FILE identity, password on key (responder)')
-realm.run(['./responder', '-x', 'pkinit={"%s": 0}' % file_enc_identity,
-           '-r', 'pkinit={"%s": "encrypted"}' % file_enc_identity,
-           '-X', 'X509_user_identity=%s' % file_enc_identity,
-           realm.user_princ])
+out = realm.run(['./responder', '-x', 'pkinit={"%s": 0}' % file_enc_identity,
+                 '-r', 'pkinit={"%s": "encrypted"}' % file_enc_identity,
+                 '-X', 'X509_user_identity=%s' % file_enc_identity,
+                 realm.user_princ])
+# Regression test for #8885 (password question asked twice).
+if out.count('OK: ') != 1:
+    fail('Wrong number of responder calls')
 # Supply the response through the convenience API.
 realm.run(['./responder', '-X', 'X509_user_identity=%s' % file_enc_identity,
            '-p', '%s=%s' % (file_enc_identity, 'encrypted'), realm.user_princ])

@@ -193,7 +193,10 @@ Scripts may use the following functions and variables:
 
 * plugins: The plugin directory in the build tree (absolute path).
 
-* hostname: This machine's fully-qualified domain name.
+* hostname: The local hostname as it will initially appear in
+  krb5_sname_to_principal() results.  (Shortname qualification is
+  turned off in the test environment to make this value easy to
+  discover from Python.)
 
 * null_input: A file opened to read /dev/null.
 
@@ -382,7 +385,6 @@ import socket
 import string
 import subprocess
 import sys
-import imp
 
 # Used when most things go wrong (other than programming errors) so
 # that the user sees an error message rather than a Python traceback,
@@ -525,23 +527,6 @@ def _find_srctop():
     return os.path.abspath(root)
 
 
-# Return the local hostname as it will be canonicalized by
-# krb5_sname_to_principal.  We can't simply use socket.getfqdn()
-# because it explicitly prefers results containing periods and
-# krb5_sname_to_principal doesn't care.
-def _get_hostname():
-    hostname = socket.gethostname()
-    try:
-        ai = socket.getaddrinfo(hostname, None, 0, 0, 0, socket.AI_CANONNAME)
-    except socket.gaierror as e:
-        fail('Local hostname "%s" does not resolve: %s.' % (hostname, e[1]))
-    (family, socktype, proto, canonname, sockaddr) = ai[0]
-    try:
-        name = socket.getnameinfo(sockaddr, socket.NI_NAMEREQD)
-    except socket.gaierror:
-        return canonname.lower()
-    return name[0].lower()
-
 # Parse command line arguments, setting global option variables.  Also
 # sets the global variable args to the positional arguments, which may
 # be used by the test script.
@@ -613,14 +598,6 @@ def _build_env():
     # or localized times.
     env['LC_ALL'] = 'C'
     return env
-
-
-def _import_runenv():
-    global buildtop
-    runenv_py = os.path.join(buildtop, 'runenv.py')
-    if not os.path.exists(runenv_py):
-        fail('You must run "make runenv.py" in %s first.' % buildtop)
-    return imp.load_source('runenv', runenv_py)
 
 
 # Merge the nested dictionaries cfg1 and cfg2 into a new dictionary.
@@ -1263,6 +1240,8 @@ _default_krb5_conf = {
     'libdefaults': {
         'default_realm': '$realm',
         'dns_lookup_kdc': 'false',
+        'dns_canonicalize_hostname': 'fallback',
+        'qualify_shortname': '',
         'plugin_base_dir': '$plugins'},
     'realms': {'$realm': {
             'kdc': '$hostname:$port0',
@@ -1362,9 +1341,13 @@ _last_cmd_output = None
 buildtop = _find_buildtop()
 srctop = _find_srctop()
 plugins = os.path.join(buildtop, 'plugins')
-runenv = _import_runenv()
-hostname = _get_hostname()
+hostname = socket.gethostname().lower()
 null_input = open(os.devnull, 'r')
+
+if not os.path.exists(os.path.join(buildtop, 'runenv.py')):
+    fail('You must run "make runenv.py" in %s first.' % buildtop)
+sys.path = [buildtop] + sys.path
+import runenv
 
 # A DB pass is a tuple of: name, kdc_conf.
 _dbpasses = [('db2', None)]

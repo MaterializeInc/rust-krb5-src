@@ -71,8 +71,8 @@ INSTALLMKDIRS = $(KRB5ROOT) $(KRB5MANROOT) $(KRB5OTHERMKDIRS) \
 		$(KRB5_DB_MODULE_DIR) $(KRB5_PA_MODULE_DIR) \
 		$(KRB5_AD_MODULE_DIR) \
 		$(KRB5_LIBKRB5_MODULE_DIR) $(KRB5_TLS_MODULE_DIR) \
-		@localstatedir@ @localstatedir@/krb5kdc \
-		@runstatedir@ @runstatedir@/krb5kdc \
+		$(localstatedir) $(localstatedir)/krb5kdc \
+		$(runstatedir) $(runstatedir)/krb5kdc \
 		$(KRB5_INCSUBDIRS) $(datadir) $(EXAMPLEDIR) \
 		$(PKGCONFIG_DIR)
 
@@ -682,6 +682,13 @@ tags: FORCE
 	$(FIND) . -name '*.y' -print | etags --lang=yacc --append -)
 FORCE:
 .PHONY: FORCE tags
+
+# Update versioned automatically-generated files.
+regen:
+	$(MAKE) depend
+	(cd man && $(MAKE) man)
+	(cd po && $(MAKE) update-po)
+	(cd lib/krb5/krb && $(RM) deltat.c && $(MAKE) deltat.c)
 
 distclean-unix:
 	$(RM) $(top_srcdir)/TAGS

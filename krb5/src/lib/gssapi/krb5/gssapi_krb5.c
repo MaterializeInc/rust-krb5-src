@@ -152,6 +152,8 @@ const gss_OID_desc krb5_gss_oid_array[] = {
     {GET_CRED_IMPERSONATOR_OID_LENGTH, GET_CRED_IMPERSONATOR_OID},
     /* GSS_KRB5_NT_ENTERPRISE_NAME */
     {10, "\052\206\110\206\367\022\001\002\002\006"},
+    /* GSS_KRB5_NT_X509_CERT */
+    {10, "\052\206\110\206\367\022\001\002\002\007"},
     { 0, 0 }
 };
 
@@ -170,6 +172,7 @@ const gss_OID GSS_KRB5_NT_PRINCIPAL_NAME        = &kg_oids[5];
 const gss_OID GSS_KRB5_CRED_NO_CI_FLAGS_X       = &kg_oids[7];
 const gss_OID GSS_KRB5_GET_CRED_IMPERSONATOR    = &kg_oids[8];
 const gss_OID GSS_KRB5_NT_ENTERPRISE_NAME       = &kg_oids[9];
+const gss_OID GSS_KRB5_NT_X509_CERT             = &kg_oids[10];
 
 static const gss_OID_set_desc oidsets[] = {
     {1, &kg_oids[0]}, /* RFC OID */
@@ -993,7 +996,7 @@ static struct gss_config iakerb_mechanism = {
     krb5_gss_inquire_saslname_for_mech,
     krb5_gss_inquire_mech_for_saslname,
     krb5_gss_inquire_attrs_for_mech,
-    krb5_gss_acquire_cred_from,
+    iakerb_gss_acquire_cred_from,
     krb5_gss_store_cred_into,
     iakerb_gss_acquire_cred_with_password,
     krb5_gss_export_cred,

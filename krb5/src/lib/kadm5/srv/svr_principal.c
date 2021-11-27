@@ -537,6 +537,10 @@ kadm5_delete_principal(void *server_handle, krb5_principal principal)
     if (principal == NULL)
         return EINVAL;
 
+    /* Deleting K/M is mostly unrecoverable, so don't allow it. */
+    if (krb5_principal_compare(handle->context, principal, master_princ))
+        return KADM5_PROTECT_PRINCIPAL;
+
     if ((ret = kdb_get_entry(handle, principal, &kdb, &adb)))
         return(ret);
     ret = k5_kadm5_hook_remove(handle->context, handle->hook_handles,
@@ -2005,7 +2009,7 @@ static int decrypt_key_data(krb5_context context,
  *      kvnop           (w) kvno to fill in, or NULL
  *
  * Effects: Searches the key_data array of entry, which must have been
- * retrived with kadm5_get_principal with the KADM5_KEY_DATA mask, to
+ * retrieved with kadm5_get_principal with the KADM5_KEY_DATA mask, to
  * find a key with a specified enctype, salt type, and kvno in a
  * principal entry.  If not found, return ENOENT.  Otherwise, decrypt
  * it with the master key, and return the key in keyblock, the salt

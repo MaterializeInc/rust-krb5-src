@@ -96,7 +96,8 @@ krb5_cc_retrieve_cred(krb5_context context, krb5_ccache cache,
     TRACE_CC_RETRIEVE(context, cache, mcreds, ret);
     if (ret != KRB5_CC_NOTFOUND)
         return ret;
-    if (!krb5_is_referral_realm(&mcreds->server->realm))
+    if (mcreds->client == NULL || mcreds->server == NULL ||
+        !krb5_is_referral_realm(&mcreds->server->realm))
         return ret;
 
     /*
@@ -296,4 +297,24 @@ krb5_cc_switch(krb5_context context, krb5_ccache cache)
     if (cache->ops->switch_to == NULL)
         return 0;
     return cache->ops->switch_to(context, cache);
+}
+
+krb5_error_code
+k5_cc_store_primary_cred(krb5_context context, krb5_ccache cache,
+                         krb5_creds *creds)
+{
+    krb5_error_code ret;
+
+    /* Write a start realm if we're writing a TGT and the client realm isn't
+     * the same as the TGS realm. */
+    if (IS_TGS_PRINC(creds->server) &&
+        !data_eq(creds->client->realm, creds->server->data[1])) {
+        ret = krb5_cc_set_config(context, cache, NULL,
+                                 KRB5_CC_CONF_START_REALM,
+                                 &creds->server->data[1]);
+        if (ret)
+            return ret;
+    }
+
+    return krb5_cc_store_cred(context, cache, creds);
 }

@@ -60,7 +60,7 @@ get_as_key_skey(krb5_context context, krb5_principal client,
   the system key store (e.g. /etc/krb5.keytab).  If keyblock is non-NULL, it
   is used as the decryption key.
 
-  A succesful call will place the ticket in the credentials cache ccache.
+  A successful call will place the ticket in the credentials cache ccache.
 
   returns system errors, encryption errors
 
@@ -75,7 +75,7 @@ krb5_get_in_tkt_with_skey(krb5_context context, krb5_flags options,
     krb5_error_code retval;
     char *server;
     krb5_principal server_princ, client_princ;
-    int use_master = 0;
+    int use_primary = 0;
     krb5_get_init_creds_opt *opts = NULL;
 
     retval = k5_populate_gic_opt(context, &opts, options, addrs, ktypes,
@@ -105,7 +105,7 @@ krb5_get_in_tkt_with_skey(krb5_context context, krb5_flags options,
     client_princ = creds->client;
     retval = k5_get_init_creds(context, creds, creds->client,
                                krb5_prompter_posix, NULL, 0, server, opts,
-                               get_as_key_skey, (void *)key, &use_master,
+                               get_as_key_skey, (void *)key, &use_primary,
                                ret_as_reply);
     krb5_free_unparsed_name(context, server);
     if (retval)

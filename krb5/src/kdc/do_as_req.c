@@ -192,7 +192,6 @@ struct as_req_state {
 static void
 finish_process_as_req(struct as_req_state *state, krb5_error_code errcode)
 {
-    krb5_key_data *server_key;
     krb5_keyblock *as_encrypting_key = NULL;
     krb5_data *response = NULL;
     const char *emsg = 0;
@@ -220,29 +219,10 @@ finish_process_as_req(struct as_req_state *state, krb5_error_code errcode)
     if (errcode)
         goto egress;
 
-    /*
-     * Find the server key
-     */
-    if ((errcode = krb5_dbe_find_enctype(kdc_context, state->server,
-                                         -1, /* ignore keytype   */
-                                         -1, /* Ignore salttype  */
-                                         0,  /* Get highest kvno */
-                                         &server_key))) {
+    errcode = get_first_current_key(kdc_context, state->server,
+                                    &state->server_keyblock);
+    if (errcode) {
         state->status = "FINDING_SERVER_KEY";
-        goto egress;
-    }
-
-    /*
-     * Convert server->key into a real key
-     * (it may be encrypted in the database)
-     *
-     *  server_keyblock is later used to generate auth data signatures
-     */
-    if ((errcode = krb5_dbe_decrypt_key_data(kdc_context, NULL,
-                                             server_key,
-                                             &state->server_keyblock,
-                                             NULL))) {
-        state->status = "DECRYPT_SERVER_KEY";
         goto egress;
     }
 
@@ -311,7 +291,7 @@ finish_process_as_req(struct as_req_state *state, krb5_error_code errcode)
     if (errcode)
         goto egress;
 
-    state->ticket_reply.enc_part.kvno = server_key->key_data_kvno;
+    state->ticket_reply.enc_part.kvno = current_kvno(state->server);
     errcode = kdc_fast_response_handle_padata(state->rstate,
                                               state->request,
                                               &state->reply,
@@ -620,18 +600,6 @@ process_as_req(krb5_kdc_req *request, krb5_data *req_pkt,
     }
     state->rock.client = state->client;
 
-    /*
-     * If the backend returned a principal that is not in the local
-     * realm, then we need to refer the client to that realm.
-     */
-    if (!is_local_principal(kdc_active_realm, state->client->princ)) {
-        /* Entry is a referral to another realm */
-        state->status = "REFERRAL";
-        au_state->cl_realm = &state->client->princ->realm;
-        errcode = KRB5KDC_ERR_WRONG_REALM;
-        goto errout;
-    }
-
     au_state->stage = SRVC_PRINC;
 
     s_flags = 0;
@@ -651,6 +619,15 @@ process_as_req(krb5_kdc_req *request, krb5_data *req_pkt,
         goto errout;
     }
 
+    /* If the KDB module returned a different realm for the client and server,
+     * we need to issue a client realm referral. */
+    if (!data_eq(state->server->princ->realm, state->client->princ->realm)) {
+        state->status = "REFERRAL";
+        au_state->cl_realm = &state->client->princ->realm;
+        errcode = KRB5KDC_ERR_WRONG_REALM;
+        goto errout;
+    }
+
     errcode = get_local_tgt(kdc_context, &state->request->server->realm,
                             state->server, &state->local_tgt,
                             &state->local_tgt_storage, &state->local_tgt_key);
@@ -659,12 +636,13 @@ process_as_req(krb5_kdc_req *request, krb5_data *req_pkt,
         goto errout;
     }
     state->rock.local_tgt = state->local_tgt;
+    state->rock.local_tgt_key = &state->local_tgt_key;
 
     au_state->stage = VALIDATE_POL;
 
     if ((errcode = validate_as_request(kdc_active_realm,
-                                       state->request, *state->client,
-                                       *state->server, state->kdc_time,
+                                       state->request, state->client,
+                                       state->server, state->kdc_time,
                                        &state->status, &state->e_data))) {
         errcode += ERROR_TABLE_BASE_krb5;
         goto errout;

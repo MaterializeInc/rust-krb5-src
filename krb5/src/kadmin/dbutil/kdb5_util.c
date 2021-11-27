@@ -85,10 +85,10 @@ void usage()
               "\tcreate  [-s]\n"
               "\tdestroy [-f]\n"
               "\tstash   [-f keyfile]\n"
-              "\tdump    [-old|-b6|-b7|-r13|-r18] [-verbose]\n"
+              "\tdump    [-b7|-r13|-r18] [-verbose]\n"
               "\t        [-mkey_convert] [-new_mkey_file mkey_file]\n"
               "\t        [-rev] [-recurse] [filename [princs...]]\n"
-              "\tload    [-old|-b6|-b7|-r13|-r18] [-verbose] [-update] "
+              "\tload    [-b7|-r13|-r18] [-hash] [-verbose] [-update] "
               "filename\n"
               "\tark     [-e etype_list] principal\n"
               "\tadd_mkey [-e etype] [-s]\n"
@@ -316,7 +316,7 @@ int main(argc, argv)
                                      &global_params, &global_params);
     if (retval) {
         com_err(progname, retval,
-                _("while retreiving configuration parameters"));
+                _("while retrieving configuration parameters"));
         exit(1);
     }
 
@@ -337,7 +337,7 @@ int main(argc, argv)
         return exit_status;
 
     if (global_params.iprop_enabled == TRUE)
-        ulog_set_role(util_context, IPROP_MASTER);
+        ulog_set_role(util_context, IPROP_PRIMARY);
     else
         ulog_set_role(util_context, IPROP_NULL);
 

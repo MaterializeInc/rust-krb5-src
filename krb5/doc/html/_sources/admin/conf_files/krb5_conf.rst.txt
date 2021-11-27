@@ -188,11 +188,10 @@ The libdefaults section may contain any of the following relations:
     hostnames for use in service principal names.  Setting this flag
     to false can improve security by reducing reliance on DNS, but
     means that short hostnames will not be canonicalized to
-    fully-qualified hostnames.  The default value is true.
-
-    If this option is set to ``fallback`` (new in release 1.18), DNS
-    canonicalization will only be performed the server hostname is not
-    found with the original name when requesting credentials.
+    fully-qualified hostnames.  If this option is set to ``fallback`` (new
+    in release 1.18), DNS canonicalization will only be performed the
+    server hostname is not found with the original name when
+    requesting credentials.  The default value is true.
 
 **dns_lookup_kdc**
     Indicate whether DNS SRV records should be used to locate the KDCs
@@ -383,6 +382,12 @@ The libdefaults section may contain any of the following relations:
     credentials will fail if the client machine does not have a
     keytab.  The default value is false.
 
+**client_aware_channel_bindings**
+    If this flag is true, then all application protocol authentication
+    requests will be flagged to indicate that the application supports
+    channel bindings when operating over a secure channel.  The
+    default value is false.
+
 .. _realms:
 
 [realms]
@@ -395,7 +400,7 @@ following tags may be specified in the realm's subsection:
 
 **admin_server**
     Identifies the host where the administration server is running.
-    Typically, this is the master Kerberos server.  This tag must be
+    Typically, this is the primary Kerberos server.  This tag must be
     given a value in order to communicate with the :ref:`kadmind(8)`
     server for the realm.
 
@@ -510,12 +515,16 @@ following tags may be specified in the realm's subsection:
     host will be tried.
 
 **master_kdc**
-    Identifies the master KDC(s).  Currently, this tag is used in only
+    The name for **primary_kdc** prior to release 1.19.  Its value is
+    used as a fallback if **primary_kdc** is not specified.
+
+**primary_kdc**
+    Identifies the primary KDC(s).  Currently, this tag is used in only
     one case: If an attempt to get credentials fails because of an
     invalid password, the client software will attempt to contact the
-    master KDC, in case the user's password has just been changed, and
+    primary KDC, in case the user's password has just been changed, and
     the updated database has not been propagated to the replica
-    servers yet.
+    servers yet.  New in release 1.19.
 
 **v4_instance_convert**
     This subsection allows the administrator to configure exceptions
@@ -1117,10 +1126,9 @@ PKINIT krb5.conf options
 **pkinit_identities**
     Specifies the location(s) to be used to find the user's X.509
     identity information.  If this option is specified multiple times,
-    the first valid value is used; this can be used to specify an
-    environment variable (with **ENV:**\ *envvar*) followed by a
-    default value.  Note that these values are not used if the user
-    specifies **X509_user_identity** on the command line.
+    each value is attempted in order until certificates are found.
+    Note that these values are not used if the user specifies
+    **X509_user_identity** on the command line.
 
 **pkinit_kdc_hostname**
     The presence of this option indicates that the client is willing
@@ -1203,7 +1211,7 @@ Here is an example of a generic krb5.conf file::
             kdc = kerberos-1.mit.edu
             kdc = kerberos-2.mit.edu
             admin_server = kerberos.mit.edu
-            master_kdc = kerberos.mit.edu
+            primary_kdc = kerberos.mit.edu
         }
         EXAMPLE.COM = {
             kdc = kerberos.example.com

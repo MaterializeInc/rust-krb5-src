@@ -44,9 +44,9 @@ Kerberos principals, password policies, and service key tables
 (keytabs).
 
 The remote kadmin client uses Kerberos to authenticate to kadmind
-using the service principal ``kadmin/ADMINHOST`` (where *ADMINHOST* is
-the fully-qualified hostname of the admin server) or ``kadmin/admin``.
-If the credentials cache contains a ticket for one of these
+using the service principal ``kadmin/admin`` or ``kadmin/ADMINHOST``
+(where *ADMINHOST* is the fully-qualified hostname of the admin
+server).  If the credentials cache contains a ticket for one of these
 principals, and the **-c** credentials_cache option is specified, that
 ticket is used to authenticate to kadmind.  Otherwise, the **-p** and
 **-k** options are used to specify the client Kerberos principal name
@@ -55,7 +55,7 @@ it requests a service ticket from the KDC, and uses that service
 ticket to authenticate to kadmind.
 
 Since kadmin.local directly accesses the KDC database, it usually must
-be run directly on the master KDC with sufficient permissions to read
+be run directly on the primary KDC with sufficient permissions to read
 the KDC database.  If the KDC database uses the LDAP database module,
 kadmin.local can be run on any host which can access the LDAP server.
 
@@ -100,10 +100,10 @@ OPTIONS
     fully anonymous operation.
 
 **-c** *credentials_cache*
-    Use *credentials_cache* as the credentials cache.  The
-    cache should contain a service ticket for the ``kadmin/ADMINHOST``
-    (where *ADMINHOST* is the fully-qualified hostname of the admin
-    server) or ``kadmin/admin`` service; it can be acquired with the
+    Use *credentials_cache* as the credentials cache.  The cache
+    should contain a service ticket for the ``kadmin/admin`` or
+    ``kadmin/ADMINHOST`` (where *ADMINHOST* is the fully-qualified
+    hostname of the admin server) service; it can be acquired with the
     :ref:`kinit(1)` program.  If this option is not specified, kadmin
     requests a new service ticket from the KDC, and stores it in its
     own temporary ccache.
@@ -607,7 +607,7 @@ expression.
 
 This command requires the **list** privilege.
 
-Alias: **listprincs**, **get_principals**, **get_princs**
+Alias: **listprincs**, **get_principals**, **getprincs**
 
 Example::
 
@@ -631,7 +631,7 @@ Displays string attributes on *principal*.
 
 This command requires the **inquire** privilege.
 
-Alias: **getstr**
+Alias: **getstrs**
 
 .. _get_strings_end:
 
@@ -828,7 +828,7 @@ tabs.
 
 This command requires the **inquire** privilege.
 
-Alias: getpol
+Alias: **getpol**
 
 Examples::
 
@@ -922,6 +922,8 @@ An entry for each of the principal's unique encryption types is added,
 ignoring multiple keys with the same encryption type but different
 salt types.
 
+Alias: **xst**
+
 Example::
 
     kadmin: ktadd -k /tmp/foo-new-keytab host/foo.mit.edu
@@ -956,6 +958,8 @@ The options are:
 
 **-q**
     Display less verbose information.
+
+Alias: **ktrem**
 
 Example::
 

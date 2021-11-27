@@ -79,9 +79,9 @@ clpreauth_otp_initvt(krb5_context context, int maj_ver, int min_ver,
                      krb5_plugin_vtable vtable);
 
 krb5_error_code
-krb5int_construct_matching_creds(krb5_context context, krb5_flags options,
-                                 krb5_creds *in_creds, krb5_creds *mcreds,
-                                 krb5_flags *fields);
+k5_get_cached_cred(krb5_context context, krb5_flags options,
+                   krb5_ccache ccache, krb5_creds *in_creds,
+                   krb5_creds **creds_out);
 
 #define IS_TGS_PRINC(p) ((p)->length == 2 &&                            \
                          data_eq_string((p)->data[0], KRB5_TGS_NAME))
@@ -201,7 +201,7 @@ k5_ccselect_free_context(krb5_context context);
 
 krb5_error_code
 k5_init_creds_get(krb5_context context, krb5_init_creds_context ctx,
-                  int *use_master);
+                  int *use_primary);
 
 krb5_error_code
 k5_init_creds_current_time(krb5_context context, krb5_init_creds_context ctx,
@@ -291,7 +291,7 @@ k5_get_init_creds(krb5_context context, krb5_creds *creds,
                   krb5_principal client, krb5_prompter_fct prompter,
                   void *prompter_data, krb5_deltat start_time,
                   const char *in_tkt_service, krb5_get_init_creds_opt *options,
-                  get_as_key_fn gak, void *gak_data, int *master,
+                  get_as_key_fn gak, void *gak_data, int *primary,
                   krb5_kdc_rep **as_reply);
 
 /*
@@ -385,5 +385,10 @@ krb5_error_code
 k5_get_proxy_cred_from_kdc(krb5_context context, krb5_flags options,
                            krb5_ccache ccache, krb5_creds *in_creds,
                            krb5_creds **out_creds);
+
+/* Return true if mprinc will match any hostname in a host-based principal name
+ * (possibly due to ignore_acceptor_hostname) with krb5_sname_match(). */
+krb5_boolean
+k5_sname_wildcard_host(krb5_context context, krb5_const_principal mprinc);
 
 #endif /* KRB5_INT_FUNC_PROTO__ */

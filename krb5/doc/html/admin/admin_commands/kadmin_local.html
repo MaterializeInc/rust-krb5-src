@@ -12,7 +12,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.18.2',
+        VERSION:     '1.19.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -95,9 +95,9 @@ to refer to both versions.  kadmin provides for the maintenance of
 Kerberos principals, password policies, and service key tables
 (keytabs).</p>
 <p>The remote kadmin client uses Kerberos to authenticate to kadmind
-using the service principal <code class="docutils literal"><span class="pre">kadmin/ADMINHOST</span></code> (where <em>ADMINHOST</em> is
-the fully-qualified hostname of the admin server) or <code class="docutils literal"><span class="pre">kadmin/admin</span></code>.
-If the credentials cache contains a ticket for one of these
+using the service principal <code class="docutils literal"><span class="pre">kadmin/admin</span></code> or <code class="docutils literal"><span class="pre">kadmin/ADMINHOST</span></code>
+(where <em>ADMINHOST</em> is the fully-qualified hostname of the admin
+server).  If the credentials cache contains a ticket for one of these
 principals, and the <strong>-c</strong> credentials_cache option is specified, that
 ticket is used to authenticate to kadmind.  Otherwise, the <strong>-p</strong> and
 <strong>-k</strong> options are used to specify the client Kerberos principal name
@@ -105,7 +105,7 @@ used to authenticate.  Once kadmin has determined the principal name,
 it requests a service ticket from the KDC, and uses that service
 ticket to authenticate to kadmind.</p>
 <p>Since kadmin.local directly accesses the KDC database, it usually must
-be run directly on the master KDC with sufficient permissions to read
+be run directly on the primary KDC with sufficient permissions to read
 the KDC database.  If the KDC database uses the LDAP database module,
 kadmin.local can be run on any host which can access the LDAP server.</p>
 </div>
@@ -142,10 +142,10 @@ principal (but not realm) will be replaced by the anonymous
 principal.  As of release 1.8, the MIT Kerberos KDC only supports
 fully anonymous operation.</dd>
 <dt><strong>-c</strong> <em>credentials_cache</em></dt>
-<dd>Use <em>credentials_cache</em> as the credentials cache.  The
-cache should contain a service ticket for the <code class="docutils literal"><span class="pre">kadmin/ADMINHOST</span></code>
-(where <em>ADMINHOST</em> is the fully-qualified hostname of the admin
-server) or <code class="docutils literal"><span class="pre">kadmin/admin</span></code> service; it can be acquired with the
+<dd>Use <em>credentials_cache</em> as the credentials cache.  The cache
+should contain a service ticket for the <code class="docutils literal"><span class="pre">kadmin/admin</span></code> or
+<code class="docutils literal"><span class="pre">kadmin/ADMINHOST</span></code> (where <em>ADMINHOST</em> is the fully-qualified
+hostname of the admin server) service; it can be acquired with the
 <a class="reference internal" href="../../user/user_commands/kinit.html#kinit-1"><span class="std std-ref">kinit</span></a> program.  If this option is not specified, kadmin
 requests a new service ticket from the KDC, and stores it in its
 own temporary ccache.</dd>
@@ -546,7 +546,7 @@ printed.  If the expression does not contain an <code class="docutils literal"><
 <code class="docutils literal"><span class="pre">&#64;</span></code> character followed by the local realm is appended to the
 expression.</p>
 <p>This command requires the <strong>list</strong> privilege.</p>
-<p>Alias: <strong>listprincs</strong>, <strong>get_principals</strong>, <strong>get_princs</strong></p>
+<p>Alias: <strong>listprincs</strong>, <strong>get_principals</strong>, <strong>getprincs</strong></p>
 <p>Example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kadmin</span><span class="p">:</span>  <span class="n">listprincs</span> <span class="n">test</span><span class="o">*</span>
 <span class="n">test3</span><span class="nd">@SECURE</span><span class="o">-</span><span class="n">TEST</span><span class="o">.</span><span class="n">OV</span><span class="o">.</span><span class="n">COM</span>
@@ -563,7 +563,7 @@ expression.</p>
 <div><strong>get_strings</strong> <em>principal</em></div></blockquote>
 <p>Displays string attributes on <em>principal</em>.</p>
 <p>This command requires the <strong>inquire</strong> privilege.</p>
-<p>Alias: <strong>getstr</strong></p>
+<p>Alias: <strong>getstrs</strong></p>
 </div>
 <div class="section" id="set-string">
 <span id="get-strings-end"></span><span id="id10"></span><h3>set_string<a class="headerlink" href="#set-string" title="Permalink to this headline">¶</a></h3>
@@ -708,7 +708,7 @@ kadmin:
 <strong>-terse</strong> flag, outputs the fields as quoted strings separated by
 tabs.</p>
 <p>This command requires the <strong>inquire</strong> privilege.</p>
-<p>Alias: getpol</p>
+<p>Alias: <strong>getpol</strong></p>
 <p>Examples:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kadmin</span><span class="p">:</span> <span class="n">get_policy</span> <span class="n">admin</span>
 <span class="n">Policy</span><span class="p">:</span> <span class="n">admin</span>
@@ -786,6 +786,7 @@ unchanged.  This option cannot be specified in combination with the
 <p>An entry for each of the principal’s unique encryption types is added,
 ignoring multiple keys with the same encryption type but different
 salt types.</p>
+<p>Alias: <strong>xst</strong></p>
 <p>Example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kadmin</span><span class="p">:</span> <span class="n">ktadd</span> <span class="o">-</span><span class="n">k</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">foo</span><span class="o">-</span><span class="n">new</span><span class="o">-</span><span class="n">keytab</span> <span class="n">host</span><span class="o">/</span><span class="n">foo</span><span class="o">.</span><span class="n">mit</span><span class="o">.</span><span class="n">edu</span>
 <span class="n">Entry</span> <span class="k">for</span> <span class="n">principal</span> <span class="n">host</span><span class="o">/</span><span class="n">foo</span><span class="o">.</span><span class="n">mit</span><span class="o">.</span><span class="n">edu</span><span class="nd">@ATHENA</span><span class="o">.</span><span class="n">MIT</span><span class="o">.</span><span class="n">EDU</span> <span class="k">with</span> <span class="n">kvno</span> <span class="mi">3</span><span class="p">,</span>
@@ -814,6 +815,7 @@ used.</dd>
 <dt><strong>-q</strong></dt>
 <dd>Display less verbose information.</dd>
 </dl>
+<p>Alias: <strong>ktrem</strong></p>
 <p>Example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kadmin</span><span class="p">:</span> <span class="n">ktremove</span> <span class="n">kadmin</span><span class="o">/</span><span class="n">admin</span> <span class="nb">all</span>
 <span class="n">Entry</span> <span class="k">for</span> <span class="n">principal</span> <span class="n">kadmin</span><span class="o">/</span><span class="n">admin</span> <span class="k">with</span> <span class="n">kvno</span> <span class="mi">3</span> <span class="n">removed</span> <span class="kn">from</span> <span class="nn">keytab</span>
@@ -974,8 +976,8 @@ variables.</p>
 
     <div class="footer-wrapper">
         <div class="footer" >
-            <div class="right" ><i>Release: 1.18.2</i><br />
-                &copy; <a href="../../copyright.html">Copyright</a> 1985-2020, MIT.
+            <div class="right" ><i>Release: 1.19.2</i><br />
+                &copy; <a href="../../copyright.html">Copyright</a> 1985-2021, MIT.
             </div>
             <div class="left">
                 

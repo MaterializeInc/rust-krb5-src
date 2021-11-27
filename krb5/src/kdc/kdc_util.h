@@ -37,10 +37,9 @@
 #include "reqstate.h"
 
 krb5_error_code check_hot_list (krb5_ticket *);
-krb5_boolean is_local_principal(kdc_realm_t *kdc_active_realm,
-                                krb5_const_principal princ1);
 krb5_boolean krb5_is_tgs_principal (krb5_const_principal);
 krb5_boolean is_cross_tgs_principal(krb5_const_principal);
+krb5_boolean is_local_tgs_principal(krb5_const_principal);
 krb5_error_code
 add_to_transited (krb5_data *,
                   krb5_data *,
@@ -51,11 +50,6 @@ krb5_error_code
 compress_transited (krb5_data *,
                     krb5_principal,
                     krb5_data *);
-krb5_error_code
-concat_authorization_data (krb5_context,
-                           krb5_authdata **,
-                           krb5_authdata **,
-                           krb5_authdata ***);
 krb5_error_code
 fetch_last_req_info (krb5_db_entry *, krb5_last_req_entry ***);
 
@@ -76,19 +70,28 @@ kdc_get_server_key (krb5_context, krb5_ticket *, unsigned int,
                     krb5_db_entry **, krb5_keyblock **, krb5_kvno *);
 
 krb5_error_code
+get_first_current_key(krb5_context context, krb5_db_entry *entry,
+                      krb5_keyblock *key_out);
+
+krb5_error_code
 get_local_tgt(krb5_context context, const krb5_data *realm,
               krb5_db_entry *candidate, krb5_db_entry **alias_out,
               krb5_db_entry **storage_out, krb5_keyblock *kb_out);
 
 int
-validate_as_request (kdc_realm_t *, krb5_kdc_req *, krb5_db_entry,
-                     krb5_db_entry, krb5_timestamp,
+validate_as_request (kdc_realm_t *, krb5_kdc_req *, krb5_db_entry *,
+                     krb5_db_entry *, krb5_timestamp,
                      const char **, krb5_pa_data ***);
 
 int
-validate_tgs_request (kdc_realm_t *, krb5_kdc_req *, krb5_db_entry,
-                      krb5_ticket *, krb5_timestamp,
-                      const char **, krb5_pa_data ***);
+validate_tgs_request(kdc_realm_t *kdc_active_realm,
+                     krb5_kdc_req *request, krb5_db_entry *server,
+                     krb5_ticket *ticket, const krb5_ticket *stkt,
+                     krb5_db_entry *stkt_server, krb5_timestamp kdc_time,
+                     krb5_pa_s4u_x509_user *s4u_x509_user,
+                     krb5_db_entry *s4u2self_client,
+                     krb5_boolean is_crossrealm, krb5_boolean is_referral,
+                     const char **status, krb5_pa_data ***e_data);
 
 krb5_flags
 get_ticket_flags(krb5_flags reqflags, krb5_db_entry *client,
@@ -264,12 +267,9 @@ return_enc_padata(krb5_context context,
 krb5_error_code
 kdc_process_s4u2self_req (kdc_realm_t *kdc_active_realm,
                           krb5_kdc_req *request,
-                          krb5_const_principal client_princ,
-                          unsigned int c_flags,
                           const krb5_db_entry *server,
                           krb5_keyblock *tgs_subkey,
                           krb5_keyblock *tgs_session,
-                          krb5_timestamp kdc_time,
                           krb5_pa_s4u_x509_user **s4u2self_req,
                           krb5_db_entry **princ_ptr,
                           const char **status);
@@ -343,6 +343,10 @@ log_tgs_badtrans(krb5_context ctx, krb5_principal cprinc,
 
 void
 log_tgs_alt_tgt(krb5_context context, krb5_principal p);
+
+krb5_boolean
+is_client_db_alias(krb5_context context, const krb5_db_entry *entry,
+                   krb5_const_principal princ);
 
 /* FAST*/
 enum krb5_fast_kdc_flags {
@@ -426,6 +430,7 @@ struct krb5_kdcpreauth_rock_st {
     krb5_data *inner_body;
     krb5_db_entry *client;
     krb5_db_entry *local_tgt;
+    krb5_keyblock *local_tgt_key;
     krb5_key_data *client_key;
     krb5_keyblock *client_keyblock;
     struct kdc_request_state *rstate;
@@ -458,6 +463,9 @@ struct krb5_kdcpreauth_rock_st {
 
 /* TGS-REQ options which are not compatible with referrals */
 #define NO_REFERRAL_OPTION (NON_TGT_OPTION | KDC_OPT_ENC_TKT_IN_SKEY)
+
+/* Options incompatible with AS and S4U2Self requests */
+#define AS_INVALID_OPTIONS (NO_REFERRAL_OPTION | KDC_OPT_CNAME_IN_ADDL_TKT)
 
 /*
  * Mask of KDC options that request the corresponding ticket flag with
@@ -530,5 +538,12 @@ int check_anon(kdc_realm_t *kdc_active_realm,
 int errcode_to_protocol(krb5_error_code code);
 
 char *data2string(krb5_data *d);
+
+/* Return the current key version of entry, or 0 if it has no keys. */
+static inline krb5_kvno
+current_kvno(krb5_db_entry *entry)
+{
+    return (entry->n_key_data == 0) ? 0 : entry->key_data[0].key_data_kvno;
+}
 
 #endif /* __KRB5_KDC_UTIL__ */

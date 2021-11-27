@@ -55,7 +55,7 @@
 
 \title{Kerberos User Guide}
 \date{ }
-\release{1.18.2}
+\release{1.19.2}
 \author{MIT}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -929,6 +929,7 @@ kerberos(1), \DUrole{xref,std,std-ref}{krb5.conf(5)}
 {[}\sphinxstylestrong{-A}{]}
 {[}\sphinxstylestrong{-q}{]}
 {[}\sphinxstylestrong{-c} \sphinxstyleemphasis{cache\_name}{]}
+{[}\sphinxstylestrong{-p} \sphinxstyleemphasis{princ\_name}{]}
 
 
 \subsection{DESCRIPTION}
@@ -1011,13 +1012,14 @@ Default location of Kerberos 5 credentials cache
 {[}\sphinxstylestrong{-E}{]}
 {[}\sphinxstylestrong{-v}{]}
 {[}\sphinxstylestrong{-R}{]}
-{[}\sphinxstylestrong{-k} {[}-\sphinxstylestrong{t} \sphinxstyleemphasis{keytab\_file}{]}{]}
+{[}\sphinxstylestrong{-k} {[}\sphinxstylestrong{-i} \textbar{} -\sphinxstylestrong{t} \sphinxstyleemphasis{keytab\_file}{]}{]}
 {[}\sphinxstylestrong{-c} \sphinxstyleemphasis{cache\_name}{]}
 {[}\sphinxstylestrong{-n}{]}
 {[}\sphinxstylestrong{-S} \sphinxstyleemphasis{service\_name}{]}
 {[}\sphinxstylestrong{-I} \sphinxstyleemphasis{input\_ccache}{]}
 {[}\sphinxstylestrong{-T} \sphinxstyleemphasis{armor\_ccache}{]}
 {[}\sphinxstylestrong{-X} \sphinxstyleemphasis{attribute}{[}=\sphinxstyleemphasis{value}{]}{]}
+{[}\sphinxstylestrong{\textendash{}request-pac} \textbar{} \sphinxstylestrong{\textendash{}no-request-pac}{]}
 {[}\sphinxstyleemphasis{principal}{]}
 
 
@@ -1195,6 +1197,13 @@ disable sending freshness tokens (for testing purposes only)
 
 \end{description}
 
+\item[{\sphinxstylestrong{\textendash{}request-pac} \textbar{} \sphinxstylestrong{\textendash{}no-request-pac}}] \leavevmode
+mutually exclusive.  If \sphinxstylestrong{\textendash{}request-pac} is set, ask the KDC to
+include a PAC in authdata; if \sphinxstylestrong{\textendash{}no-request-pac} is set, ask the
+KDC not to include a PAC; if neither are set,  the KDC will follow
+its default, which is typically is to include a PAC if doing so is
+supported.
+
 \end{description}
 
 
@@ -1229,8 +1238,9 @@ default location for the local host’s keytab.
 {[}\sphinxstylestrong{-e}{]}
 {[}{[}\sphinxstylestrong{-c}{]} {[}\sphinxstylestrong{-l}{]} {[}\sphinxstylestrong{-A}{]} {[}\sphinxstylestrong{-f}{]} {[}\sphinxstylestrong{-s}{]} {[}\sphinxstylestrong{-a} {[}\sphinxstylestrong{-n}{]}{]}{]}
 {[}\sphinxstylestrong{-C}{]}
-{[}\sphinxstylestrong{-k} {[}\sphinxstylestrong{-t}{]} {[}\sphinxstylestrong{-K}{]}{]}
+{[}\sphinxstylestrong{-k} {[}\sphinxstylestrong{-i}{]} {[}\sphinxstylestrong{-t}{]} {[}\sphinxstylestrong{-K}{]}{]}
 {[}\sphinxstylestrong{-V}{]}
+{[}\sphinxstylestrong{-d}{]}
 {[}\sphinxstyleemphasis{cache\_name}\textbar{}\sphinxstyleemphasis{keytab\_name}{]}
 
 
@@ -1312,6 +1322,9 @@ keytab file.
 \item[{\sphinxstylestrong{-K}}] \leavevmode
 Display the value of the encryption key in each keytab entry in
 the keytab file.
+
+\item[{\sphinxstylestrong{-d}}] \leavevmode
+Display the authdata types (if any) for each entry.
 
 \item[{\sphinxstylestrong{-V}}] \leavevmode
 Display the Kerberos version number and exit.
@@ -1651,7 +1664,7 @@ wrong password is typed in, ksu fails.
 
 \begin{sphinxadmonition}{note}{Note:}
 During authentication, only the tickets that could be
-obtained without providing a password are cached in in the
+obtained without providing a password are cached in the
 source cache.
 \end{sphinxadmonition}
 
@@ -1994,14 +2007,14 @@ Default location of Kerberos 5 credentials cache
 \sphinxstylestrong{kvno}
 {[}\sphinxstylestrong{-c} \sphinxstyleemphasis{ccache}{]}
 {[}\sphinxstylestrong{-e} \sphinxstyleemphasis{etype}{]}
+{[}\sphinxstylestrong{-k} \sphinxstyleemphasis{keytab}{]}
 {[}\sphinxstylestrong{-q}{]}
-{[}\sphinxstylestrong{-h}{]}
+{[}\sphinxstylestrong{-u} \textbar{} \sphinxstylestrong{-S} \sphinxstyleemphasis{sname}{]}
 {[}\sphinxstylestrong{-P}{]}
-{[}\sphinxstylestrong{-S} \sphinxstyleemphasis{sname}{]}
-{[}\sphinxstylestrong{-I} \sphinxstyleemphasis{for\_user}{]}
-{[}\sphinxstylestrong{-U} \sphinxstyleemphasis{for\_user}{]}
-{[}\sphinxstylestrong{-F} \sphinxstyleemphasis{cert\_file}{]}
-{[}\sphinxstylestrong{\textendash{}u2u} \sphinxstyleemphasis{ccache}{]}
+{[}\sphinxstylestrong{\textendash{}cached-only}{]}
+{[}\sphinxstylestrong{\textendash{}no-store}{]}
+{[}\sphinxstylestrong{\textendash{}out-cache} \sphinxstyleemphasis{cache}{]}
+{[}{[}\{\sphinxstylestrong{-F} \sphinxstyleemphasis{cert\_file} \textbar{} \{\sphinxstylestrong{-I} \textbar{} \sphinxstylestrong{-U}\} \sphinxstyleemphasis{for\_user}\} {[}\sphinxstylestrong{-P}{]}{]} \textbar{} \sphinxstylestrong{\textendash{}u2u} \sphinxstyleemphasis{ccache}{]}
 \sphinxstyleemphasis{service1 service2} …
 
 
@@ -2022,13 +2035,18 @@ Specifies the enctype which will be requested for the session key
 of all the services named on the command line.  This is useful in
 certain backward compatibility situations.
 
+\item[{\sphinxstylestrong{-k} \sphinxstyleemphasis{keytab}}] \leavevmode
+Decrypt the acquired tickets using \sphinxstyleemphasis{keytab} to confirm their
+validity.
+
 \item[{\sphinxstylestrong{-q}}] \leavevmode
 Suppress printing output when successful.  If a service ticket
 cannot be obtained, an error message will still be printed and
 kvno will exit with nonzero status.
 
-\item[{\sphinxstylestrong{-h}}] \leavevmode
-Prints a usage statement and exits.
+\item[{\sphinxstylestrong{-u}}] \leavevmode
+Use the unknown name type in requested service principal names.
+This option Cannot be used with \sphinxstyleemphasis{-S}.
 
 \item[{\sphinxstylestrong{-P}}] \leavevmode
 Specifies that the \sphinxstyleemphasis{service1 service2} …  arguments are to be
@@ -2056,6 +2074,20 @@ Same as -I, but treats \sphinxstyleemphasis{for\_user} as an enterprise name.
 Specifies that protocol transition is to be used, identifying the
 client principal with the X.509 certificate in \sphinxstyleemphasis{cert\_file}.  The
 certificate file must be in PEM format.
+
+\item[{\sphinxstylestrong{\textendash{}cached-only}}] \leavevmode
+Only retrieve credentials already present in the cache, not from
+the KDC.  (Added in release 1.19.)
+
+\item[{\sphinxstylestrong{\textendash{}no-store}}] \leavevmode
+Do not store retrieved credentials in the cache.  If
+\sphinxstylestrong{\textendash{}out-cache} is also specified, credentials will still be
+stored into the output credential cache.  (Added in release 1.19.)
+
+\item[{\sphinxstylestrong{\textendash{}out-cache} \sphinxstyleemphasis{ccache}}] \leavevmode
+Initialize \sphinxstyleemphasis{ccache} and store all retrieved credentials into it.
+Do not store acquired credentials in the input cache.  (Added in
+release 1.19.)
 
 \item[{\sphinxstylestrong{\textendash{}u2u} \sphinxstyleemphasis{ccache}}] \leavevmode
 Requests a user-to-user ticket.  \sphinxstyleemphasis{ccache} must contain a local

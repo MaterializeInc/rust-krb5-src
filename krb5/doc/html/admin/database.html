@@ -12,7 +12,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.18.2',
+        VERSION:     '1.19.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -85,8 +85,8 @@ kadmin.local, which directly accesses the Kerberos database on the
 local filesystem (or through LDAP).  kadmin.local is necessary to set
 up enough of the database to be able to use the remote version.</p>
 <p>kadmin can authenticate to the admin server using the service
-principal <code class="docutils literal"><span class="pre">kadmin/HOST</span></code> (where <em>HOST</em> is the hostname of the admin
-server) or <code class="docutils literal"><span class="pre">kadmin/admin</span></code>.  If the credentials cache contains a
+principal <code class="docutils literal"><span class="pre">kadmin/admin</span></code> or <code class="docutils literal"><span class="pre">kadmin/HOST</span></code> (where <em>HOST</em> is the
+hostname of the admin server).  If the credentials cache contains a
 ticket for either service principal and the <strong>-c</strong> ccache option is
 specified, that ticket is used to authenticate to KADM5.  Otherwise,
 the <strong>-p</strong> and <strong>-k</strong> options are used to specify the client Kerberos
@@ -149,10 +149,10 @@ principal (but not realm) will be replaced by the anonymous
 principal.  As of release 1.8, the MIT Kerberos KDC only supports
 fully anonymous operation.</dd>
 <dt><strong>-c</strong> <em>credentials_cache</em></dt>
-<dd>Use <em>credentials_cache</em> as the credentials cache.  The
-cache should contain a service ticket for the <code class="docutils literal"><span class="pre">kadmin/ADMINHOST</span></code>
-(where <em>ADMINHOST</em> is the fully-qualified hostname of the admin
-server) or <code class="docutils literal"><span class="pre">kadmin/admin</span></code> service; it can be acquired with the
+<dd>Use <em>credentials_cache</em> as the credentials cache.  The cache
+should contain a service ticket for the <code class="docutils literal"><span class="pre">kadmin/admin</span></code> or
+<code class="docutils literal"><span class="pre">kadmin/ADMINHOST</span></code> (where <em>ADMINHOST</em> is the fully-qualified
+hostname of the admin server) service; it can be acquired with the
 <a class="reference internal" href="../user/user_commands/kinit.html#kinit-1"><span class="std std-ref">kinit</span></a> program.  If this option is not specified, kadmin
 requests a new service ticket from the KDC, and stores it in its
 own temporary ccache.</dd>
@@ -497,7 +497,7 @@ printed.  If the expression does not contain an <code class="docutils literal"><
 <code class="docutils literal"><span class="pre">&#64;</span></code> character followed by the local realm is appended to the
 expression.</p>
 <p>This command requires the <strong>list</strong> privilege.</p>
-<p>Alias: <strong>listprincs</strong>, <strong>get_principals</strong>, <strong>get_princs</strong></p>
+<p>Alias: <strong>listprincs</strong>, <strong>get_principals</strong>, <strong>getprincs</strong></p>
 <p>Example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kadmin</span><span class="p">:</span>  <span class="n">listprincs</span> <span class="n">test</span><span class="o">*</span>
 <span class="n">test3</span><span class="nd">@SECURE</span><span class="o">-</span><span class="n">TEST</span><span class="o">.</span><span class="n">OV</span><span class="o">.</span><span class="n">COM</span>
@@ -677,7 +677,7 @@ is in use by any principals.</p>
 <strong>-terse</strong> flag, outputs the fields as quoted strings separated by
 tabs.</p>
 <p>This command requires the <strong>inquire</strong> privilege.</p>
-<p>Alias: getpol</p>
+<p>Alias: <strong>getpol</strong></p>
 <p>Examples:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kadmin</span><span class="p">:</span> <span class="n">get_policy</span> <span class="n">admin</span>
 <span class="n">Policy</span><span class="p">:</span> <span class="n">admin</span>
@@ -730,7 +730,7 @@ be modified by using the <strong>-policy</strong> or <strong>-clearpolicy</stron
 <a class="reference internal" href="admin_commands/kadmin_local.html#modify-principal"><span class="std std-ref">modify_principal</span></a>.</p>
 </div>
 <div class="section" id="updating-the-history-key">
-<h3>Updating the history key<a class="headerlink" href="#updating-the-history-key" title="Permalink to this headline">¶</a></h3>
+<span id="updating-history-key"></span><h3>Updating the history key<a class="headerlink" href="#updating-the-history-key" title="Permalink to this headline">¶</a></h3>
 <p>If a policy specifies a number of old keys kept of two or more, the
 stored old keys are encrypted in a history key, which is found in the
 key data of the <code class="docutils literal"><span class="pre">kadmin/history</span></code> principal.</p>
@@ -1033,26 +1033,26 @@ shell%
 </div>
 </div>
 <div class="section" id="updating-the-master-key">
-<h3>Updating the master key<a class="headerlink" href="#updating-the-master-key" title="Permalink to this headline">¶</a></h3>
+<span id="updating-master-key"></span><h3>Updating the master key<a class="headerlink" href="#updating-the-master-key" title="Permalink to this headline">¶</a></h3>
 <p>Starting with release 1.7, <a class="reference internal" href="admin_commands/kdb5_util.html#kdb5-util-8"><span class="std std-ref">kdb5_util</span></a> allows the master key
 to be changed using a rollover process, with minimal loss of
 availability.  To roll over the master key, follow these steps:</p>
 <ol class="arabic">
-<li><p class="first">On the master KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">list_mkeys</span></code> to view the current
-master key version number (KVNO).  If you have never rolled over
-the master key before, this will likely be version 1:</p>
+<li><p class="first">On the primary KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">list_mkeys</span></code> to view the
+current master key version number (KVNO).  If you have never rolled
+over the master key before, this will likely be version 1:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ kdb5_util list_mkeys
 Master keys for Principal: K/M@KRBTEST.COM
 KVNO: 1, Enctype: aes256-cts-hmac-sha384-192, Active on: Thu Jan 01 00:00:00 UTC 1970 *
 </pre></div>
 </div>
 </li>
-<li><p class="first">On the master KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">use_mkey</span> <span class="pre">1</span></code> to ensure that a
+<li><p class="first">On the primary KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">use_mkey</span> <span class="pre">1</span></code> to ensure that a
 master key activation list is present in the database.  This step
 is unnecessary in release 1.11.4 or later, or if the database was
 initially created with release 1.7 or later.</p>
 </li>
-<li><p class="first">On the master KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">add_mkey</span> <span class="pre">-s</span></code> to create a new
+<li><p class="first">On the primary KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">add_mkey</span> <span class="pre">-s</span></code> to create a new
 master key and write it to the stash file.  Enter a secure password
 when prompted.  If this is the first time you are changing the
 master key, the new key will have version 2.  The new master key
@@ -1066,17 +1066,17 @@ any replica KDCs, you can skip this and the next step.</p>
 the new master key is present, and then <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">stash</span></code> to
 write the new master key to the replica KDC’s stash file.</p>
 </li>
-<li><p class="first">On the master KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">use_mkey</span> <span class="pre">2</span></code> to begin using the
+<li><p class="first">On the primary KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">use_mkey</span> <span class="pre">2</span></code> to begin using the
 new master key.  Replace <code class="docutils literal"><span class="pre">2</span></code> with the version of the new master
 key, as appropriate.  You can optionally specify a date for the new
 master key to become active; by default, it will become active
 immediately.  Prior to release 1.12, <a class="reference internal" href="admin_commands/kadmind.html#kadmind-8"><span class="std std-ref">kadmind</span></a> must be
 restarted for this change to take full effect.</p>
 </li>
-<li><p class="first">On the master KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">update_princ_encryption</span></code>.  This
-command will iterate over the database and re-encrypt all keys in
-the new master key.  If the database is large and uses DB2, the
-master KDC will become unavailable while this command runs, but
+<li><p class="first">On the primary KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">update_princ_encryption</span></code>.
+This command will iterate over the database and re-encrypt all keys
+in the new master key.  If the database is large and uses DB2, the
+primary KDC will become unavailable while this command runs, but
 clients should fail over to replica KDCs (if any are present)
 during this time period.  In release 1.13 and later, you can
 instead run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">-x</span> <span class="pre">unlockiter</span> <span class="pre">update_princ_encryption</span></code> to
@@ -1087,7 +1087,7 @@ keep the database available to the KDC and kadmind while it runs.</p>
 and until all running KDC and kadmind processes have serviced
 requests using updated principal entries.</p>
 </li>
-<li><p class="first">On the master KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">purge_mkeys</span></code> to clean up the
+<li><p class="first">On the primary KDC, run <code class="docutils literal"><span class="pre">kdb5_util</span> <span class="pre">purge_mkeys</span></code> to clean up the
 old master key.</p>
 </li>
 </ol>
@@ -1547,13 +1547,13 @@ Upgrading the KDC to release 1.14 or later will correct this bug.</p>
 <h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
 <p>At some very large sites, dumping and transmitting the database can
 take more time than is desirable for changes to propagate from the
-master KDC to the replica KDCs.  The incremental propagation support
+primary KDC to the replica KDCs.  The incremental propagation support
 added in the 1.7 release is intended to address this.</p>
-<p>With incremental propagation enabled, all programs on the master KDC
+<p>With incremental propagation enabled, all programs on the primary KDC
 that change the database also write information about the changes to
 an “update log” file, maintained as a circular buffer of a certain
 size.  A process on each replica KDC connects to a service on the
-master KDC (currently implemented in the <a class="reference internal" href="admin_commands/kadmind.html#kadmind-8"><span class="std std-ref">kadmind</span></a> server) and
+primary KDC (currently implemented in the <a class="reference internal" href="admin_commands/kadmind.html#kadmind-8"><span class="std std-ref">kadmind</span></a> server) and
 periodically requests the changes that have been made since the last
 check.  By default, this check is done every two minutes.</p>
 <p>Incremental propagation uses the following entries in the per-realm
@@ -1575,11 +1575,11 @@ data in the KDC config file (See <a class="reference internal" href="conf_files/
 </tr>
 <tr class="row-odd"><td>iprop_replica_poll</td>
 <td><em>time interval</em></td>
-<td>Indicates how often the replica should poll the master KDC for changes to the database. The default is two minutes.</td>
+<td>Indicates how often the replica should poll the primary KDC for changes to the database. The default is two minutes.</td>
 </tr>
 <tr class="row-even"><td>iprop_port</td>
 <td><em>integer</em></td>
-<td>Specifies the port number to be used for incremental propagation. This is required in both master and replica configuration files.</td>
+<td>Specifies the port number to be used for incremental propagation. This is required in both primary and replica configuration files.</td>
 </tr>
 <tr class="row-odd"><td>iprop_resync_timeout</td>
 <td><em>integer</em></td>
@@ -1591,31 +1591,31 @@ data in the KDC config file (See <a class="reference internal" href="conf_files/
 </tr>
 </tbody>
 </table>
-<p>Both master and replica sides must have a principal named
+<p>Both primary and replica sides must have a principal named
 <code class="docutils literal"><span class="pre">kiprop/hostname</span></code> (where <em>hostname</em> is the lowercase,
 fully-qualified, canonical name for the host) registered in the
 Kerberos database, and have keys for that principal stored in the
-default keytab file (<a class="reference internal" href="../mitK5defaults.html#paths"><span class="std std-ref">DEFKTNAME</span></a>).  In release 1.13, the
-<code class="docutils literal"><span class="pre">kiprop/hostname</span></code> principal is created automatically for the master
-KDC, but it must still be created for replica KDCs.</p>
-<p>On the master KDC side, the <code class="docutils literal"><span class="pre">kiprop/hostname</span></code> principal must be
+default keytab file (<a class="reference internal" href="../mitK5defaults.html#paths"><span class="std std-ref">DEFKTNAME</span></a>).  The <code class="docutils literal"><span class="pre">kiprop/hostname</span></code> principal may
+have been created automatically for the primary KDC, but it must
+always be created for replica KDCs.</p>
+<p>On the primary KDC side, the <code class="docutils literal"><span class="pre">kiprop/hostname</span></code> principal must be
 listed in the kadmind ACL file <a class="reference internal" href="conf_files/kadm5_acl.html#kadm5-acl-5"><span class="std std-ref">kadm5.acl</span></a>, and given the
 <strong>p</strong> privilege (see <a class="reference internal" href="#privileges"><span class="std std-ref">Privileges</span></a>).</p>
 <p>On the replica KDC side, <a class="reference internal" href="admin_commands/kpropd.html#kpropd-8"><span class="std std-ref">kpropd</span></a> should be run.  When
 incremental propagation is enabled, it will connect to the kadmind on
-the master KDC and start requesting updates.</p>
+the primary KDC and start requesting updates.</p>
 <p>The normal kprop mechanism is disabled by the incremental propagation
 support.  However, if the replica has been unable to fetch changes
-from the master KDC for too long (network problems, perhaps), the log
-on the master may wrap around and overwrite some of the updates that
+from the primary KDC for too long (network problems, perhaps), the log
+on the primary may wrap around and overwrite some of the updates that
 the replica has not yet retrieved.  In this case, the replica will
-instruct the master KDC to dump the current database out to a file and
-invoke a one-time kprop propagation, with special options to also
+instruct the primary KDC to dump the current database out to a file
+and invoke a one-time kprop propagation, with special options to also
 convey the point in the update log at which the replica should resume
 fetching incremental updates.  Thus, all the keytab and ACL setup
 previously described for kprop propagation is still needed.</p>
 <p>If an environment has a large number of replicas, it may be desirable
-to arrange them in a hierarchy instead of having the master serve
+to arrange them in a hierarchy instead of having the primary serve
 updates to every replica.  To do this, run <code class="docutils literal"><span class="pre">kadmind</span> <span class="pre">-proponly</span></code> on
 each intermediate replica, and <code class="docutils literal"><span class="pre">kpropd</span> <span class="pre">-A</span> <span class="pre">upstreamhostname</span></code> on
 downstream replicas to direct each one to the appropriate upstream
@@ -1623,11 +1623,11 @@ replica.</p>
 <p>There are several known restrictions in the current implementation:</p>
 <ul class="simple">
 <li>The incremental update protocol does not transport changes to policy
-objects.  Any policy changes on the master will result in full
+objects.  Any policy changes on the primary will result in full
 resyncs to all replicas.</li>
 <li>The replica’s KDB module must support locking; it cannot be using the
 LDAP KDB module.</li>
-<li>The master and replica must be able to initiate TCP connections in
+<li>The primary and replica must be able to initiate TCP connections in
 both directions, without an intervening NAT.</li>
 </ul>
 </div>
@@ -1645,7 +1645,7 @@ service.  In the Sun implementation, the service is registered with
 rpcbind (also known as portmapper) and the client looks up the port
 number to contact.  In the MIT implementation, where interaction with
 some modern versions of rpcbind doesn’t always work well, the port
-number must be specified in the config file on both the master and
+number must be specified in the config file on both the primary and
 replica sides.</p>
 <p>The Sun implementation hard-codes pathnames in <code class="docutils literal"><span class="pre">/var/krb5</span></code> for the
 update log and the per-replica kprop dump files.  In the MIT
@@ -1803,8 +1803,8 @@ config file, and the per-replica dump files are stored in
 
     <div class="footer-wrapper">
         <div class="footer" >
-            <div class="right" ><i>Release: 1.18.2</i><br />
-                &copy; <a href="../copyright.html">Copyright</a> 1985-2020, MIT.
+            <div class="right" ><i>Release: 1.19.2</i><br />
+                &copy; <a href="../copyright.html">Copyright</a> 1985-2021, MIT.
             </div>
             <div class="left">
                 

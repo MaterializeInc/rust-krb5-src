@@ -960,7 +960,7 @@ typedef struct _kdb_vftabl {
      *
      * If db_args contains the value "temporary", the module should create an
      * exclusively locked side copy of the database suitable for loading in a
-     * propagation from master to replica.  This side copy will later be
+     * propagation from primary to replica.  This side copy will later be
      * promoted with promote_db, allowing complete updates of the DB with no
      * loss in read availability.  If the module cannot comply with this
      * architecture, it should return an error.
@@ -1103,7 +1103,7 @@ typedef struct _kdb_vftabl {
 
     /*
      * Optional: For each principal entry in the database, invoke func with the
-     * argments func_arg and the entry data.  If match_entry is specified, the
+     * arguments func_arg and the entry data.  If match_entry is specified, the
      * module may narrow the iteration to principal names matching that regular
      * expression; a module may alternatively ignore match_entry.
      */
@@ -1135,9 +1135,9 @@ typedef struct _kdb_vftabl {
 
     /*
      * Optional: For each password policy entry in the database, invoke func
-     * with the argments data and the entry data.  If match_entry is specified,
-     * the module may narrow the iteration to policy names matching that
-     * regular expression; a module may alternatively ignore match_entry.
+     * with the arguments data and the entry data.  If match_entry is
+     * specified, the module may narrow the iteration to policy names matching
+     * that regular expression; a module may alternatively ignore match_entry.
      */
     krb5_error_code (*iter_policy)(krb5_context kcontext, char *match_entry,
                                    osa_adb_iter_policy_func func,

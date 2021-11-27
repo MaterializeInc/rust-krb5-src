@@ -12,7 +12,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.18.2',
+        VERSION:     '1.19.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -187,7 +187,7 @@ existing tickets will still function until their scheduled expiry
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The new <code class="docutils literal"><span class="pre">krbtgt&#64;REALM</span></code> key should be propagated to replica KDCs
-immediately so that TGTs issued by the master KDC can be used to
+immediately so that TGTs issued by the primary KDC can be used to
 issue service tickets on replica KDCs.  Replica KDCs will refuse
 requests using the new TGT kvno until the new krbtgt entry has
 been propagated to them.</p>
@@ -356,7 +356,7 @@ this flag on a service principal is not always advisable; see the entry in
 <p class="first admonition-title">Note</p>
 <p class="last">As before, the KDC process must be restarted for this change to take
 effect.  It is best practice to update kdc.conf on all KDCs, not just the
-master, to avoid unpleasant surprises should the master fail and a
+primary, to avoid unpleasant surprises should the primary fail and a
 replica need to be promoted.</p>
 </div>
 <p>It is now appropriate to remove the legacy single-DES key from the
@@ -530,8 +530,8 @@ converted to the new master key.</p>
 
     <div class="footer-wrapper">
         <div class="footer" >
-            <div class="right" ><i>Release: 1.18.2</i><br />
-                &copy; <a href="../../copyright.html">Copyright</a> 1985-2020, MIT.
+            <div class="right" ><i>Release: 1.19.2</i><br />
+                &copy; <a href="../../copyright.html">Copyright</a> 1985-2021, MIT.
             </div>
             <div class="left">
                 
