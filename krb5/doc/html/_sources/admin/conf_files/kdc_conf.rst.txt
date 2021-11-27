@@ -222,14 +222,19 @@ The following tags may be specified in a [realms] subsection:
     (Boolean value.)  Specifies whether incremental database
     propagation is enabled.  The default value is false.
 
-**iprop_master_ulogsize**
+**iprop_ulogsize**
     (Integer.)  Specifies the maximum number of log entries to be
     retained for incremental propagation.  The default value is 1000.
-    Prior to release 1.11, the maximum value was 2500.
+    Prior to release 1.11, the maximum value was 2500.  New in release
+    1.19.
+
+**iprop_master_ulogsize**
+    The name for **iprop_ulogsize** prior to release 1.19.  Its value is
+    used as a fallback if **iprop_ulogsize** is not specified.
 
 **iprop_replica_poll**
     (Delta time string.)  Specifies how often the replica KDC polls
-    for new updates from the master.  The default value is ``2m``
+    for new updates from the primary.  The default value is ``2m``
     (that is, two minutes).  New in release 1.17.
 
 **iprop_slave_poll**
@@ -253,7 +258,7 @@ The following tags may be specified in a [realms] subsection:
     (Port number.)  Specifies the port number to be used for
     incremental propagation.  When **iprop_enable** is true, this
     relation is required in the replica KDC configuration file, and
-    this relation or **iprop_listen** is required in the master
+    this relation or **iprop_listen** is required in the primary
     configuration file, as there is no default port number.  Port
     numbers specified in **iprop_listen** entries will override this
     port number for the :ref:`kadmind(8)` daemon.
@@ -839,17 +844,17 @@ Encryption types
 
 Any tag in the configuration files which requires a list of encryption
 types can be set to some combination of the following strings.
-Encryption types marked as "weak" are available for compatibility but
-not recommended for use.
+Encryption types marked as "weak" and "deprecated" are available for
+compatibility but not recommended for use.
 
 ==================================================== =========================================================
 des3-cbc-raw                                         Triple DES cbc mode raw (weak)
-des3-cbc-sha1 des3-hmac-sha1 des3-cbc-sha1-kd        Triple DES cbc mode with HMAC/sha1
+des3-cbc-sha1 des3-hmac-sha1 des3-cbc-sha1-kd        Triple DES cbc mode with HMAC/sha1 (deprecated)
 aes256-cts-hmac-sha1-96 aes256-cts aes256-sha1       AES-256 CTS mode with 96-bit SHA-1 HMAC
 aes128-cts-hmac-sha1-96 aes128-cts aes128-sha1       AES-128 CTS mode with 96-bit SHA-1 HMAC
 aes256-cts-hmac-sha384-192 aes256-sha2               AES-256 CTS mode with 192-bit SHA-384 HMAC
 aes128-cts-hmac-sha256-128 aes128-sha2               AES-128 CTS mode with 128-bit SHA-256 HMAC
-arcfour-hmac rc4-hmac arcfour-hmac-md5               RC4 with HMAC/MD5
+arcfour-hmac rc4-hmac arcfour-hmac-md5               RC4 with HMAC/MD5 (deprecated)
 arcfour-hmac-exp rc4-hmac-exp arcfour-hmac-md5-exp   Exportable RC4 with HMAC/MD5 (weak)
 camellia256-cts-cmac camellia256-cts                 Camellia-256 CTS mode with CMAC
 camellia128-cts-cmac camellia128-cts                 Camellia-128 CTS mode with CMAC

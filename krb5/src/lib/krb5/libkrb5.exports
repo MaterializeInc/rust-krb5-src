@@ -125,6 +125,7 @@ k5_add_pa_data_from_data
 k5_alloc_pa_data
 k5_authind_decode
 k5_build_conf_principals
+k5_cc_store_primary_cred
 k5_ccselect_free_context
 k5_change_error_message_code
 k5_etypes_contains
@@ -158,6 +159,7 @@ k5_internalize_keyblock
 k5_internalize_principal
 k5_is_string_numeric
 k5_kt_get_principal
+k5_kt_have_match
 k5_localauth_free_context
 k5_locate_kdc
 k5_marshal_cred
@@ -561,7 +563,6 @@ krb5_ser_unpack_int64
 krb5_server_decrypt_ticket_keytab
 krb5_set_config_files
 krb5_set_debugging_time
-krb5_set_default_in_tkt_ktypes
 krb5_set_default_realm
 krb5_set_default_tgs_enctypes
 krb5_set_default_tgs_ktypes

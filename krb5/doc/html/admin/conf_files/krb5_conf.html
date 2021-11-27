@@ -12,7 +12,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.18.2',
+        VERSION:     '1.19.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -238,15 +238,14 @@ clients from taking advantage of new stronger enctypes when the
 libraries are upgraded.</p>
 </dd>
 <dt><strong>dns_canonicalize_hostname</strong></dt>
-<dd><p class="first">Indicate whether name lookups will be used to canonicalize
+<dd>Indicate whether name lookups will be used to canonicalize
 hostnames for use in service principal names.  Setting this flag
 to false can improve security by reducing reliance on DNS, but
 means that short hostnames will not be canonicalized to
-fully-qualified hostnames.  The default value is true.</p>
-<p class="last">If this option is set to <code class="docutils literal"><span class="pre">fallback</span></code> (new in release 1.18), DNS
-canonicalization will only be performed the server hostname is not
-found with the original name when requesting credentials.</p>
-</dd>
+fully-qualified hostnames.  If this option is set to <code class="docutils literal"><span class="pre">fallback</span></code> (new
+in release 1.18), DNS canonicalization will only be performed the
+server hostname is not found with the original name when
+requesting credentials.  The default value is true.</dd>
 <dt><strong>dns_lookup_kdc</strong></dt>
 <dd><p class="first">Indicate whether DNS SRV records should be used to locate the KDCs
 and other servers for a realm, if they are not listed in the
@@ -423,6 +422,11 @@ attempt fails.</dd>
 <dd>If this flag is true, then an attempt to verify initial
 credentials will fail if the client machine does not have a
 keytab.  The default value is false.</dd>
+<dt><strong>client_aware_channel_bindings</strong></dt>
+<dd>If this flag is true, then all application protocol authentication
+requests will be flagged to indicate that the application supports
+channel bindings when operating over a secure channel.  The
+default value is false.</dd>
 </dl>
 </div>
 <div class="section" id="realms">
@@ -434,7 +438,7 @@ following tags may be specified in the realm’s subsection:</p>
 <dl class="docutils">
 <dt><strong>admin_server</strong></dt>
 <dd>Identifies the host where the administration server is running.
-Typically, this is the master Kerberos server.  This tag must be
+Typically, this is the primary Kerberos server.  This tag must be
 given a value in order to communicate with the <a class="reference internal" href="../admin_commands/kadmind.html#kadmind-8"><span class="std std-ref">kadmind</span></a>
 server for the realm.</dd>
 <dt><strong>auth_to_local</strong></dt>
@@ -534,12 +538,15 @@ If there is no such entry, DNS will be queried (unless forbidden
 by <strong>dns_lookup_kdc</strong>).  Finally, port 464 on the <strong>admin_server</strong>
 host will be tried.</dd>
 <dt><strong>master_kdc</strong></dt>
-<dd>Identifies the master KDC(s).  Currently, this tag is used in only
+<dd>The name for <strong>primary_kdc</strong> prior to release 1.19.  Its value is
+used as a fallback if <strong>primary_kdc</strong> is not specified.</dd>
+<dt><strong>primary_kdc</strong></dt>
+<dd>Identifies the primary KDC(s).  Currently, this tag is used in only
 one case: If an attempt to get credentials fails because of an
 invalid password, the client software will attempt to contact the
-master KDC, in case the user’s password has just been changed, and
+primary KDC, in case the user’s password has just been changed, and
 the updated database has not been propagated to the replica
-servers yet.</dd>
+servers yet.  New in release 1.19.</dd>
 <dt><strong>v4_instance_convert</strong></dt>
 <dd>This subsection allows the administrator to configure exceptions
 to the <strong>default_domain</strong> mapping rule.  It contains V4 instances
@@ -1070,10 +1077,9 @@ The default is 2048.</dd>
 <dt><strong>pkinit_identities</strong></dt>
 <dd>Specifies the location(s) to be used to find the user’s X.509
 identity information.  If this option is specified multiple times,
-the first valid value is used; this can be used to specify an
-environment variable (with <strong>ENV:</strong><em>envvar</em>) followed by a
-default value.  Note that these values are not used if the user
-specifies <strong>X509_user_identity</strong> on the command line.</dd>
+each value is attempted in order until certificates are found.
+Note that these values are not used if the user specifies
+<strong>X509_user_identity</strong> on the command line.</dd>
 <dt><strong>pkinit_kdc_hostname</strong></dt>
 <dd>The presence of this option indicates that the client is willing
 to accept a KDC certificate with a dNSName SAN (Subject
@@ -1186,7 +1192,7 @@ Valid parameters are:</p>
         <span class="n">kdc</span> <span class="o">=</span> <span class="n">kerberos</span><span class="o">-</span><span class="mf">1.</span><span class="n">mit</span><span class="o">.</span><span class="n">edu</span>
         <span class="n">kdc</span> <span class="o">=</span> <span class="n">kerberos</span><span class="o">-</span><span class="mf">2.</span><span class="n">mit</span><span class="o">.</span><span class="n">edu</span>
         <span class="n">admin_server</span> <span class="o">=</span> <span class="n">kerberos</span><span class="o">.</span><span class="n">mit</span><span class="o">.</span><span class="n">edu</span>
-        <span class="n">master_kdc</span> <span class="o">=</span> <span class="n">kerberos</span><span class="o">.</span><span class="n">mit</span><span class="o">.</span><span class="n">edu</span>
+        <span class="n">primary_kdc</span> <span class="o">=</span> <span class="n">kerberos</span><span class="o">.</span><span class="n">mit</span><span class="o">.</span><span class="n">edu</span>
     <span class="p">}</span>
     <span class="n">EXAMPLE</span><span class="o">.</span><span class="n">COM</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">kdc</span> <span class="o">=</span> <span class="n">kerberos</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span>
@@ -1322,8 +1328,8 @@ Valid parameters are:</p>
 
     <div class="footer-wrapper">
         <div class="footer" >
-            <div class="right" ><i>Release: 1.18.2</i><br />
-                &copy; <a href="../../copyright.html">Copyright</a> 1985-2020, MIT.
+            <div class="right" ><i>Release: 1.19.2</i><br />
+                &copy; <a href="../../copyright.html">Copyright</a> 1985-2021, MIT.
             </div>
             <div class="left">
                 

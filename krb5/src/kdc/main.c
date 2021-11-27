@@ -504,7 +504,7 @@ create_workers(verto_ctx *ctx, int num)
 
     /*
      * Setup our signal handlers which will forward to the children.
-     * These handlers will be overriden in the child processes.
+     * These handlers will be overridden in the child processes.
      */
 #ifdef POSIX_SIGNALS
     (void) sigemptyset(&s_action.sa_mask);
@@ -605,7 +605,7 @@ usage(char *name)
 {
     fprintf(stderr,
             _("usage: %s [-x db_args]* [-d dbpathname] [-r dbrealmname]\n"
-              "\t\t[-R replaycachename] [-m] [-k masterenctype]\n"
+              "\t\t[-T time_offset] [-m] [-k masterenctype]\n"
               "\t\t[-M masterkeyname] [-p port] [-P pid_file]\n"
               "\t\t[-n] [-w numworkers] [/]\n\n"
               "where,\n"
@@ -697,7 +697,7 @@ initialize_realms(krb5_context kcontext, int argc, char **argv,
      * twice if worker processes are used, so we must initialize optind.
      */
     optind = 1;
-    while ((c = getopt(argc, argv, "x:r:d:mM:k:R:e:P:p:s:nw:4:T:X3")) != -1) {
+    while ((c = getopt(argc, argv, "x:r:d:mM:k:R:P:p:nw:4:T:X3")) != -1) {
         switch(c) {
         case 'x':
             db_args_size++;
@@ -1025,9 +1025,13 @@ int main(int argc, char **argv)
         finish_realms();
         return 1;
     }
+
+    /* Clean up realms for now and reinitialize them after daemonizing, since
+     * some KDB modules are not fork-safe. */
+    finish_realms();
+
     if (!nofork && daemon(0, 0)) {
         kdc_err(kcontext, errno, _("while detaching from tty"));
-        finish_realms();
         return 1;
     }
     if (pid_file != NULL) {
@@ -1039,15 +1043,14 @@ int main(int argc, char **argv)
         }
     }
     if (workers > 0) {
-        finish_realms();
         retval = create_workers(ctx, workers);
         if (retval) {
             kdc_err(kcontext, errno, _("creating worker processes"));
             return 1;
         }
-        /* We get here only in a worker child process; re-initialize realms. */
-        initialize_realms(kcontext, argc, argv, NULL);
     }
+
+    initialize_realms(kcontext, argc, argv, NULL);
 
     /* Initialize audit system and audit KDC startup. */
     retval = load_audit_modules(kcontext);

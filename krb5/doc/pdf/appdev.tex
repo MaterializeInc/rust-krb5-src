@@ -55,7 +55,7 @@
 
 \title{Kerberos Application Developer Guide}
 \date{ }
-\release{1.18.2}
+\release{1.19.2}
 \author{MIT}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -137,6 +137,13 @@ enterprise name string (see \index{RFC!RFC 6806}\sphinxhref{https://tools.ietf.o
 \sphinxcode{user@suffix}.  This name type is used to convey alias names, and
 is defined in the \sphinxcode{\textless{}gssapi/gssapi\_krb5.h\textgreater{}} header.  (New in
 release 1.17.)
+
+\item {} 
+\sphinxstylestrong{GSS\_KRB5\_NT\_X509\_CERT}: The value should be an X.509 certificate
+encoded according to \index{RFC!RFC 5280}\sphinxhref{https://tools.ietf.org/html/rfc5280.html}{\sphinxstylestrong{RFC 5280}}.  This name form can be used for
+the desired\_name parameter of gss\_acquire\_cred\_impersonate\_name(),
+to identify the S4U2Self user by certificate.  (New in release
+1.19.)
 
 \end{itemize}
 
@@ -276,6 +283,96 @@ ticket contains \DUrole{xref,std,std-ref}{authentication indicators}.
 One indicator is returned per invocation of \sphinxhref{https://tools.ietf.org/html/6680.html\#section-7.5}{gss\_get\_name\_attribute},
 so multiple invocations may be necessary to retrieve all of the
 indicators from the ticket.  (New in release 1.15.)
+
+
+\section{Credential store extensions}
+\label{\detokenize{appdev/gssapi:credential-store-extensions}}
+Beginning with release 1.11, the following GSSAPI extensions declared
+in \sphinxcode{\textless{}gssapi/gssapi\_ext.h\textgreater{}} can be used to specify how credentials
+are acquired or stored:
+
+\fvset{hllines={, ,}}%
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{struct} \PYG{n}{gss\PYGZus{}key\PYGZus{}value\PYGZus{}element\PYGZus{}struct} \PYG{p}{\PYGZob{}}
+    \PYG{n}{const} \PYG{n}{char} \PYG{o}{*}\PYG{n}{key}\PYG{p}{;}
+    \PYG{n}{const} \PYG{n}{char} \PYG{o}{*}\PYG{n}{value}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+\PYG{n}{typedef} \PYG{n}{struct} \PYG{n}{gss\PYGZus{}key\PYGZus{}value\PYGZus{}element\PYGZus{}struct} \PYG{n}{gss\PYGZus{}key\PYGZus{}value\PYGZus{}element\PYGZus{}desc}\PYG{p}{;}
+
+\PYG{n}{struct} \PYG{n}{gss\PYGZus{}key\PYGZus{}value\PYGZus{}set\PYGZus{}struct} \PYG{p}{\PYGZob{}}
+    \PYG{n}{OM\PYGZus{}uint32} \PYG{n}{count}\PYG{p}{;}
+    \PYG{n}{gss\PYGZus{}key\PYGZus{}value\PYGZus{}element\PYGZus{}desc} \PYG{o}{*}\PYG{n}{elements}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+\PYG{n}{typedef} \PYG{n}{const} \PYG{n}{struct} \PYG{n}{gss\PYGZus{}key\PYGZus{}value\PYGZus{}set\PYGZus{}struct} \PYG{n}{gss\PYGZus{}key\PYGZus{}value\PYGZus{}set\PYGZus{}desc}\PYG{p}{;}
+\PYG{n}{typedef} \PYG{n}{const} \PYG{n}{gss\PYGZus{}key\PYGZus{}value\PYGZus{}set\PYGZus{}desc} \PYG{o}{*}\PYG{n}{gss\PYGZus{}const\PYGZus{}key\PYGZus{}value\PYGZus{}set\PYGZus{}t}\PYG{p}{;}
+
+\PYG{n}{OM\PYGZus{}uint32} \PYG{n}{gss\PYGZus{}acquire\PYGZus{}cred\PYGZus{}from}\PYG{p}{(}\PYG{n}{OM\PYGZus{}uint32} \PYG{o}{*}\PYG{n}{minor\PYGZus{}status}\PYG{p}{,}
+                                \PYG{n}{const} \PYG{n}{gss\PYGZus{}name\PYGZus{}t} \PYG{n}{desired\PYGZus{}name}\PYG{p}{,}
+                                \PYG{n}{OM\PYGZus{}uint32} \PYG{n}{time\PYGZus{}req}\PYG{p}{,}
+                                \PYG{n}{const} \PYG{n}{gss\PYGZus{}OID\PYGZus{}set} \PYG{n}{desired\PYGZus{}mechs}\PYG{p}{,}
+                                \PYG{n}{gss\PYGZus{}cred\PYGZus{}usage\PYGZus{}t} \PYG{n}{cred\PYGZus{}usage}\PYG{p}{,}
+                                \PYG{n}{gss\PYGZus{}const\PYGZus{}key\PYGZus{}value\PYGZus{}set\PYGZus{}t} \PYG{n}{cred\PYGZus{}store}\PYG{p}{,}
+                                \PYG{n}{gss\PYGZus{}cred\PYGZus{}id\PYGZus{}t} \PYG{o}{*}\PYG{n}{output\PYGZus{}cred\PYGZus{}handle}\PYG{p}{,}
+                                \PYG{n}{gss\PYGZus{}OID\PYGZus{}set} \PYG{o}{*}\PYG{n}{actual\PYGZus{}mechs}\PYG{p}{,}
+                                \PYG{n}{OM\PYGZus{}uint32} \PYG{o}{*}\PYG{n}{time\PYGZus{}rec}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{n}{OM\PYGZus{}uint32} \PYG{n}{gss\PYGZus{}store\PYGZus{}cred\PYGZus{}into}\PYG{p}{(}\PYG{n}{OM\PYGZus{}uint32} \PYG{o}{*}\PYG{n}{minor\PYGZus{}status}\PYG{p}{,}
+                              \PYG{n}{gss\PYGZus{}cred\PYGZus{}id\PYGZus{}t} \PYG{n}{input\PYGZus{}cred\PYGZus{}handle}\PYG{p}{,}
+                              \PYG{n}{gss\PYGZus{}cred\PYGZus{}usage\PYGZus{}t} \PYG{n}{cred\PYGZus{}usage}\PYG{p}{,}
+                              \PYG{n}{const} \PYG{n}{gss\PYGZus{}OID} \PYG{n}{desired\PYGZus{}mech}\PYG{p}{,}
+                              \PYG{n}{OM\PYGZus{}uint32} \PYG{n}{overwrite\PYGZus{}cred}\PYG{p}{,}
+                              \PYG{n}{OM\PYGZus{}uint32} \PYG{n}{default\PYGZus{}cred}\PYG{p}{,}
+                              \PYG{n}{gss\PYGZus{}const\PYGZus{}key\PYGZus{}value\PYGZus{}set\PYGZus{}t} \PYG{n}{cred\PYGZus{}store}\PYG{p}{,}
+                              \PYG{n}{gss\PYGZus{}OID\PYGZus{}set} \PYG{o}{*}\PYG{n}{elements\PYGZus{}stored}\PYG{p}{,}
+                              \PYG{n}{gss\PYGZus{}cred\PYGZus{}usage\PYGZus{}t} \PYG{o}{*}\PYG{n}{cred\PYGZus{}usage\PYGZus{}stored}\PYG{p}{)}\PYG{p}{;}
+\end{sphinxVerbatim}
+
+The additional \sphinxstyleemphasis{cred\_store} parameter allows the caller to specify
+information about how the credentials should be obtained and stored.
+The following options are supported by the krb5 mechanism:
+\begin{itemize}
+\item {} 
+\sphinxstylestrong{ccache}: For acquiring initiator credentials, the name of the
+\DUrole{xref,std,std-ref}{credential cache} to which the handle will
+refer.  For storing credentials, the name of the cache where the
+credentials should be stored.  If a collection name is given, the
+primary cache of the collection will be used; this behavior may
+change in future releases to select a cache from the collection.
+
+\item {} 
+\sphinxstylestrong{client\_keytab}: For acquiring initiator credentials, the name of
+the \DUrole{xref,std,std-ref}{keytab} which will be used, if
+necessary, to refresh the credentials in the cache.
+
+\item {} 
+\sphinxstylestrong{keytab}: For acquiring acceptor credentials, the name of the
+\DUrole{xref,std,std-ref}{keytab} to which the handle will refer.
+In release 1.19 and later, this option also determines the keytab to
+be used for verification when initiator credentials are acquired
+using a password and verified.
+
+\item {} 
+\sphinxstylestrong{password}: For acquiring initiator credentials, this option
+instructs the mechanism to acquire fresh credentials into a unique
+memory credential cache.  This option may not be used with the
+\sphinxstylestrong{ccache} or \sphinxstylestrong{client\_keytab} options, and a \sphinxstyleemphasis{desired\_name} must
+be specified.  (New in release 1.19.)
+
+\item {} 
+\sphinxstylestrong{rcache}: For acquiring acceptor credentials, the name of the
+\DUrole{xref,std,std-ref}{replay cache} to be used when processing
+the initiator tokens.  (New in release 1.13.)
+
+\item {} 
+\sphinxstylestrong{verify}: For acquiring initiator credentials, this option
+instructs the mechanism to verify the credentials by obtaining a
+ticket to a service with a known key.  The service key is obtained
+from the keytab specified with the \sphinxstylestrong{keytab} option or the default
+keytab.  The value may be the name of a principal in the keytab, or
+the empty string.  If the empty string is given, any \sphinxcode{host}
+service principal in the keytab may be used.  (New in release 1.19.)
+
+\end{itemize}
 
 
 \section{Importing and exporting credentials}
@@ -2309,8 +2406,10 @@ This flag is on by default. It controls whether {\hyperref[\detokenize{appdev/re
 \end{description}\end{quote}
 
 Set a callback to receive password and account expiration times.
+\begin{quote}
 
-This option only applies to {\hyperref[\detokenize{appdev/refs/api/krb5_get_init_creds_password:c.krb5_get_init_creds_password}]{\sphinxcrossref{\sphinxcode{krb5\_get\_init\_creds\_password()}}}} . \sphinxstyleemphasis{cb} will be invoked if and only if credentials are successfully acquired. The callback will receive the \sphinxstyleemphasis{context} from the {\hyperref[\detokenize{appdev/refs/api/krb5_get_init_creds_password:c.krb5_get_init_creds_password}]{\sphinxcrossref{\sphinxcode{krb5\_get\_init\_creds\_password()}}}} call and the \sphinxstyleemphasis{data} argument supplied with this API. The remaining arguments should be interpreted as follows:
+\sphinxstyleemphasis{cb} will be invoked if and only if credentials are successfully acquired. The callback will receive the \sphinxstyleemphasis{context} from the calling function and the \sphinxstyleemphasis{data} argument supplied with this API. The remaining arguments should be interpreted as follows:
+\end{quote}
 
 If \sphinxstyleemphasis{is\_last\_req} is true, then the KDC reply contained last-req entries which unambiguously indicated the password expiration, account expiration, or both. (If either value was not present, the corresponding argument will be 0.) Furthermore, a non-zero \sphinxstyleemphasis{password\_expiration} should be taken as a suggestion from the KDC that a warning be displayed.
 
@@ -6806,7 +6905,7 @@ This function frees the contents of \sphinxstyleemphasis{val} and the structure 
 
 \end{description}\end{quote}
 
-This function frees the contents of \sphinxstyleemphasis{val} , but not the structure itself.
+This function frees the contents of \sphinxstyleemphasis{val} , but not the structure itself. It sets the structure’s data pointer to null and (beginning in release 1.19) sets its length to zero.
 
 
 \subsubsection{krb5\_free\_default\_realm -  Free a default realm string returned by krb5\_get\_default\_realm() .}
@@ -11126,7 +11225,7 @@ This function frees the contents of \sphinxstyleemphasis{val} and the structure 
 
 \end{description}\end{quote}
 
-This function frees the contents of \sphinxstyleemphasis{val} , but not the structure itself.
+This function frees the contents of \sphinxstyleemphasis{val} , but not the structure itself. It sets the checksum’s data pointer to null and (beginning in release 1.19) sets its length to zero.
 
 
 \subsubsection{krb5\_free\_cksumtypes -  Free an array of checksum types.}
@@ -17700,6 +17799,30 @@ Initial authentication request.
 \sphinxattableend\end{savenotes}
 
 
+\subsubsection{KRB5\_AUTHDATA\_AP\_OPTIONS}
+\label{\detokenize{appdev/refs/macros/KRB5_AUTHDATA_AP_OPTIONS:krb5-authdata-ap-options-data}}\label{\detokenize{appdev/refs/macros/KRB5_AUTHDATA_AP_OPTIONS::doc}}\label{\detokenize{appdev/refs/macros/KRB5_AUTHDATA_AP_OPTIONS:krb5-authdata-ap-options}}\index{KRB5\_AUTHDATA\_AP\_OPTIONS (built-in variable)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{appdev/refs/macros/KRB5_AUTHDATA_AP_OPTIONS:KRB5_AUTHDATA_AP_OPTIONS}}\pysigline{\sphinxbfcode{KRB5\_AUTHDATA\_AP\_OPTIONS}}
+\end{fulllineitems}
+
+
+
+\begin{savenotes}\sphinxattablestart
+\centering
+\begin{tabulary}{\linewidth}[t]{|T|T|}
+\hline
+
+\sphinxcode{KRB5\_AUTHDATA\_AP\_OPTIONS}
+&
+\sphinxcode{143}
+\\
+\hline
+\end{tabulary}
+\par
+\sphinxattableend\end{savenotes}
+
+
 \subsubsection{KRB5\_AUTHDATA\_AUTH\_INDICATOR}
 \label{\detokenize{appdev/refs/macros/KRB5_AUTHDATA_AUTH_INDICATOR:krb5-authdata-auth-indicator}}\label{\detokenize{appdev/refs/macros/KRB5_AUTHDATA_AUTH_INDICATOR::doc}}\label{\detokenize{appdev/refs/macros/KRB5_AUTHDATA_AUTH_INDICATOR:krb5-authdata-auth-indicator-data}}\index{KRB5\_AUTHDATA\_AUTH\_INDICATOR (built-in variable)}
 
@@ -22602,6 +22725,32 @@ Ignore realm if present.
 \sphinxattableend\end{savenotes}
 
 
+\subsubsection{KRB5\_PRINCIPAL\_PARSE\_NO\_DEF\_REALM}
+\label{\detokenize{appdev/refs/macros/KRB5_PRINCIPAL_PARSE_NO_DEF_REALM:krb5-principal-parse-no-def-realm-data}}\label{\detokenize{appdev/refs/macros/KRB5_PRINCIPAL_PARSE_NO_DEF_REALM::doc}}\label{\detokenize{appdev/refs/macros/KRB5_PRINCIPAL_PARSE_NO_DEF_REALM:krb5-principal-parse-no-def-realm}}\index{KRB5\_PRINCIPAL\_PARSE\_NO\_DEF\_REALM (built-in variable)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{appdev/refs/macros/KRB5_PRINCIPAL_PARSE_NO_DEF_REALM:KRB5_PRINCIPAL_PARSE_NO_DEF_REALM}}\pysigline{\sphinxbfcode{KRB5\_PRINCIPAL\_PARSE\_NO\_DEF\_REALM}}
+\end{fulllineitems}
+
+
+Don’t add default realm.
+
+
+\begin{savenotes}\sphinxattablestart
+\centering
+\begin{tabulary}{\linewidth}[t]{|T|T|}
+\hline
+
+\sphinxcode{KRB5\_PRINCIPAL\_PARSE\_NO\_DEF\_REALM}
+&
+\sphinxcode{0x10}
+\\
+\hline
+\end{tabulary}
+\par
+\sphinxattableend\end{savenotes}
+
+
 \subsubsection{KRB5\_PRINCIPAL\_PARSE\_NO\_REALM}
 \label{\detokenize{appdev/refs/macros/KRB5_PRINCIPAL_PARSE_NO_REALM:krb5-principal-parse-no-realm-data}}\label{\detokenize{appdev/refs/macros/KRB5_PRINCIPAL_PARSE_NO_REALM::doc}}\label{\detokenize{appdev/refs/macros/KRB5_PRINCIPAL_PARSE_NO_REALM:krb5-principal-parse-no-realm}}\index{KRB5\_PRINCIPAL\_PARSE\_NO\_REALM (built-in variable)}
 
@@ -23076,23 +23225,23 @@ PKINIT responder question.
 
 The PKINIT responder question is asked when the client needs a password that’s being used to protect key information, and is formatted as a JSON object. A specific identity’s flags value, if not zero, is the bitwise-OR of one or more of the KRB5\_RESPONDER\_PKINIT\_FLAGS\_TOKEN\_* flags defined below, and possibly other flags to be added later. Any resemblance to similarly-named CKF\_* values in the PKCS\#11 API should not be depended on.
 
-\sphinxstyleemphasis{\{}
-
-\sphinxstyleemphasis{identity \textless{}string\textgreater{} : flags \textless{}number\textgreater{},}
-
-\sphinxstyleemphasis{…}
-
-\sphinxstyleemphasis{\}}
+\fvset{hllines={, ,}}%
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+ \PYG{p}{\PYGZob{}}
+    \PYG{n}{identity} \PYG{o}{\PYGZlt{}}\PYG{n}{string}\PYG{o}{\PYGZgt{}} \PYG{o}{:} \PYG{n}{flags} \PYG{o}{\PYGZlt{}}\PYG{n}{number}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+    \PYG{p}{.}\PYG{p}{.}\PYG{p}{.}
+\PYG{p}{\PYGZcb{}}
+\end{sphinxVerbatim}
 
 The answer to the question MUST be JSON formatted:
 
-\sphinxstyleemphasis{\{}
-
-\sphinxstyleemphasis{identity \textless{}string\textgreater{} : password \textless{}string\textgreater{},}
-
-\sphinxstyleemphasis{…}
-
-\sphinxstyleemphasis{\}}
+\fvset{hllines={, ,}}%
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+ \PYG{p}{\PYGZob{}}
+    \PYG{n}{identity} \PYG{o}{\PYGZlt{}}\PYG{n}{string}\PYG{o}{\PYGZgt{}} \PYG{o}{:} \PYG{n}{password} \PYG{o}{\PYGZlt{}}\PYG{n}{string}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+    \PYG{p}{.}\PYG{p}{.}\PYG{p}{.}
+\PYG{p}{\PYGZcb{}}
+\end{sphinxVerbatim}
 
 
 \begin{savenotes}\sphinxattablestart
@@ -23304,47 +23453,35 @@ OTP responder question.
 
 The OTP responder question is asked when the KDC indicates that an OTP value is required in order to complete the authentication. The JSON format of the challenge is:
 
-\sphinxstyleemphasis{\{}
-
-\sphinxstyleemphasis{“service”: \textless{}string (optional)\textgreater{},}
-
-\sphinxstyleemphasis{“tokenInfo”: {[}}
-
-\sphinxstyleemphasis{\{}
-
-\sphinxstyleemphasis{“flags”: \textless{}number\textgreater{},}
-
-\sphinxstyleemphasis{“vendor”: \textless{}string (optional)\textgreater{},}
-
-\sphinxstyleemphasis{“challenge”: \textless{}string (optional)\textgreater{},}
-
-\sphinxstyleemphasis{“length”: \textless{}number (optional)\textgreater{},}
-
-\sphinxstyleemphasis{“format”: \textless{}number (optional)\textgreater{},}
-
-\sphinxstyleemphasis{“tokenID”: \textless{}string (optional)\textgreater{},}
-
-\sphinxstyleemphasis{“algID”: \textless{}string (optional)\textgreater{},}
-
-\sphinxstyleemphasis{\},}
-
-\sphinxstyleemphasis{…}
-
-\sphinxstyleemphasis{{]}}
-
-\sphinxstyleemphasis{\}}
+\fvset{hllines={, ,}}%
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+ \PYG{p}{\PYGZob{}}
+  \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{service}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:} \PYG{o}{\PYGZlt{}}\PYG{n}{string} \PYG{p}{(}\PYG{n}{optional}\PYG{p}{)}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+  \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{tokenInfo}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:} \PYG{p}{[}
+    \PYG{p}{\PYGZob{}}
+      \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{flags}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:}     \PYG{o}{\PYGZlt{}}\PYG{n}{number}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+      \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{vendor}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:}    \PYG{o}{\PYGZlt{}}\PYG{n}{string} \PYG{p}{(}\PYG{n}{optional}\PYG{p}{)}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+      \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{challenge}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:} \PYG{o}{\PYGZlt{}}\PYG{n}{string} \PYG{p}{(}\PYG{n}{optional}\PYG{p}{)}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+      \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{length}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:}    \PYG{o}{\PYGZlt{}}\PYG{n}{number} \PYG{p}{(}\PYG{n}{optional}\PYG{p}{)}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+      \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{format}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:}    \PYG{o}{\PYGZlt{}}\PYG{n}{number} \PYG{p}{(}\PYG{n}{optional}\PYG{p}{)}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+      \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{tokenID}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:}   \PYG{o}{\PYGZlt{}}\PYG{n}{string} \PYG{p}{(}\PYG{n}{optional}\PYG{p}{)}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+      \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{algID}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:}     \PYG{o}{\PYGZlt{}}\PYG{n}{string} \PYG{p}{(}\PYG{n}{optional}\PYG{p}{)}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+    \PYG{p}{\PYGZcb{}}\PYG{p}{,}
+    \PYG{p}{.}\PYG{p}{.}\PYG{p}{.}
+  \PYG{p}{]}
+\PYG{p}{\PYGZcb{}}
+\end{sphinxVerbatim}
 
 The answer to the question MUST be JSON formatted:
 
-\sphinxstyleemphasis{\{}
-
-\sphinxstyleemphasis{“tokeninfo”: \textless{}number\textgreater{},}
-
-\sphinxstyleemphasis{“value”: \textless{}string (optional)\textgreater{},}
-
-\sphinxstyleemphasis{“pin”: \textless{}string (optional)\textgreater{},}
-
-\sphinxstyleemphasis{\}}
+\fvset{hllines={, ,}}%
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+ \PYG{p}{\PYGZob{}}
+  \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{tokeninfo}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:} \PYG{o}{\PYGZlt{}}\PYG{n}{number}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+  \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{value}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:}     \PYG{o}{\PYGZlt{}}\PYG{n}{string} \PYG{p}{(}\PYG{n}{optional}\PYG{p}{)}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+  \PYG{l+s}{\PYGZdq{}}\PYG{l+s}{pin}\PYG{l+s}{\PYGZdq{}}\PYG{o}{:}       \PYG{o}{\PYGZlt{}}\PYG{n}{string} \PYG{p}{(}\PYG{n}{optional}\PYG{p}{)}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+\PYG{p}{\PYGZcb{}}
+\end{sphinxVerbatim}
 
 For more detail, please see RFC 6560.
 

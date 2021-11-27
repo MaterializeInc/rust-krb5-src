@@ -12,7 +12,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.18.2',
+        VERSION:     '1.19.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -119,6 +119,7 @@ unchanged.  This option cannot be specified in combination with the
 <p>An entry for each of the principal’s unique encryption types is added,
 ignoring multiple keys with the same encryption type but different
 salt types.</p>
+<p>Alias: <strong>xst</strong></p>
 <p>Example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kadmin</span><span class="p">:</span> <span class="n">ktadd</span> <span class="o">-</span><span class="n">k</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">foo</span><span class="o">-</span><span class="n">new</span><span class="o">-</span><span class="n">keytab</span> <span class="n">host</span><span class="o">/</span><span class="n">foo</span><span class="o">.</span><span class="n">mit</span><span class="o">.</span><span class="n">edu</span>
 <span class="n">Entry</span> <span class="k">for</span> <span class="n">principal</span> <span class="n">host</span><span class="o">/</span><span class="n">foo</span><span class="o">.</span><span class="n">mit</span><span class="o">.</span><span class="n">edu</span><span class="nd">@ATHENA</span><span class="o">.</span><span class="n">MIT</span><span class="o">.</span><span class="n">EDU</span> <span class="k">with</span> <span class="n">kvno</span> <span class="mi">3</span><span class="p">,</span>
@@ -163,6 +164,7 @@ used.</dd>
 <dt><strong>-q</strong></dt>
 <dd>Display less verbose information.</dd>
 </dl>
+<p>Alias: <strong>ktrem</strong></p>
 <p>Example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kadmin</span><span class="p">:</span> <span class="n">ktremove</span> <span class="n">kadmin</span><span class="o">/</span><span class="n">admin</span> <span class="nb">all</span>
 <span class="n">Entry</span> <span class="k">for</span> <span class="n">principal</span> <span class="n">kadmin</span><span class="o">/</span><span class="n">admin</span> <span class="k">with</span> <span class="n">kvno</span> <span class="mi">3</span> <span class="n">removed</span> <span class="kn">from</span> <span class="nn">keytab</span>
@@ -217,13 +219,12 @@ variable in <a class="reference internal" href="conf_files/krb5_conf.html#libdef
 <div class="section" id="getting-dns-information-correct">
 <h2>Getting DNS information correct<a class="headerlink" href="#getting-dns-information-correct" title="Permalink to this headline">¶</a></h2>
 <p>Several aspects of Kerberos rely on name service.  When a hostname is
-used to name a service, the Kerberos library canonicalizes the
-hostname using forward and reverse name resolution.  (The reverse name
-resolution step can be turned off using the <strong>rdns</strong> variable in
-<a class="reference internal" href="conf_files/krb5_conf.html#libdefaults"><span class="std std-ref">[libdefaults]</span></a>.)  The result of this canonicalization must match
-the principal entry in the host’s keytab, or authentication will fail.</p>
-<p>Each host’s canonical name must be the fully-qualified host name
-(including the domain), and each host’s IP address must
+used to name a service, clients may canonicalize the hostname using
+forward and possibly reverse name resolution.  The result of this
+canonicalization must match the principal entry in the host’s keytab,
+or authentication will fail.  To work with all client canonicalization
+configurations, each host’s canonical name must be the fully-qualified
+host name (including the domain), and each host’s IP address must
 reverse-resolve to the canonical name.</p>
 <p>Configuration of hostnames varies by operating system.  On the
 application server itself, canonicalization will typically use the
@@ -363,8 +364,8 @@ point for learning to configure firewalls.</p>
 
     <div class="footer-wrapper">
         <div class="footer" >
-            <div class="right" ><i>Release: 1.18.2</i><br />
-                &copy; <a href="../copyright.html">Copyright</a> 1985-2020, MIT.
+            <div class="right" ><i>Release: 1.19.2</i><br />
+                &copy; <a href="../copyright.html">Copyright</a> 1985-2021, MIT.
             </div>
             <div class="left">
                 

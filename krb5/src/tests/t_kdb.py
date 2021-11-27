@@ -370,7 +370,7 @@ ldap_modify('dn: krbPrincipalName=canon@KRBTEST.COM,cn=t1,cn=krb5\n'
             'krbCanonicalName: canon@KRBTEST.COM\n')
 realm.run([kadminl, 'getprinc', 'alias'],
           expected_msg='Principal: canon@KRBTEST.COM\n')
-realm.run([kadminl, 'getprinc', 'ent\@abc'],
+realm.run([kadminl, 'getprinc', 'ent\\@abc'],
           expected_msg='Principal: canon@KRBTEST.COM\n')
 realm.run([kadminl, 'getprinc', 'canon'],
           expected_msg='Principal: canon@KRBTEST.COM\n')
@@ -424,7 +424,7 @@ realm.klist('canon@KRBTEST.COM', 'alias@KRBTEST.COM')
 
 realm.kinit('ent@abc', password('canon'), ['-E'])
 realm.run([kvno, 'alias'])
-realm.klist('ent\@abc@KRBTEST.COM', 'alias@KRBTEST.COM')
+realm.klist('ent\\@abc@KRBTEST.COM', 'alias@KRBTEST.COM')
 
 # Test client name canonicalization in non-krbtgt AS reply
 realm.kinit('alias', password('canon'), ['-C', '-S', 'kadmin/changepw'])
@@ -538,13 +538,19 @@ realm.run([kadminl, 'getprinc', 'pwuser'],
 
 realm.stop()
 
-# Briefly test dump and load.
+# Test dump and load.  Include a regression test for #8882
+# (pw_expiration not set during load operation).
 mark('LDAP dump and load')
+realm.run([kadminl, 'modprinc', '-pwexpire', 'now', 'pwuser'])
 dumpfile = os.path.join(realm.testdir, 'dump')
 realm.run([kdb5_util, 'dump', dumpfile])
 realm.run([kdb5_util, 'load', dumpfile], expected_code=1,
           expected_msg='KDB module requires -update argument')
+realm.run([kadminl, 'delprinc', 'pwuser'])
 realm.run([kdb5_util, 'load', '-update', dumpfile])
+out = realm.run([kadminl, 'getprinc', 'pwuser'])
+if 'Password expiration date: [never]' in out:
+    fail('pw_expiration not preserved across dump and load')
 
 # Destroy the realm.
 kldaputil(['destroy', '-f'])

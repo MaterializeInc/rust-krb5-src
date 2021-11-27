@@ -163,11 +163,13 @@ testprincs = {'krbtgt/SREALM': {'keys': 'aes128-cts'},
 kdcconf1 = {'realms': {'$realm': {'database_module': 'test'}},
             'dbmodules': {'test': {'db_library': 'test',
                                    'princs': testprincs,
-                                   'alias': {'enterprise@abc': '@UREALM'}}}}
+                                   'alias': {'enterprise@abc': '@UREALM',
+                                             'user@UREALM': '@UREALM'}}}}
 kdcconf2 = {'realms': {'$realm': {'database_module': 'test'}},
             'dbmodules': {'test': {'db_library': 'test',
                                    'princs': testprincs,
                                    'alias': {'user@SREALM': '@SREALM',
+                                             'user@UREALM': 'user',
                                              'enterprise@abc': 'user'}}}}
 r1, r2 = cross_realms(2, xtgts=(),
                       args=({'realm': 'SREALM', 'kdc_conf': kdcconf1},
@@ -207,7 +209,7 @@ msgs = ('Getting initial credentials for enterprise\\@abc@SREALM',
         '/Additional pre-authentication required',
         'Identified realm of client principal as UREALM',
         'Getting credentials enterprise\\@abc@UREALM -> user@SREALM',
-        'TGS reply is for enterprise\@abc@UREALM -> user@SREALM')
+        'TGS reply is for enterprise\\@abc@UREALM -> user@SREALM')
 r1.run(['./t_s4u', 'e:enterprise@abc@NOREALM', '-', r1.keytab],
        expected_trace=msgs)
 
@@ -274,6 +276,16 @@ msgs = ('Getting initial credentials for enterprise\\@abc@SREALM',
         'Storing enterprise\\@abc@UREALM')
 r1.run([kvno, '-U', 'enterprise@abc', '-F', cert_path, r1.user_princ],
        expected_trace=msgs)
+
+shutil.copyfile(savefile, r1.ccache)
+
+mark('S4U2Self using X509 certificate (GSSAPI)')
+
+r1.run(['./t_s4u', 'c:other', '-', r1.keytab])
+r1.run(['./t_s4u', 'c:user@UREALM', '-', r1.keytab])
+
+r1.run(['./t_s4u', '--spnego', 'c:other', '-', r1.keytab])
+r1.run(['./t_s4u', '--spnego', 'c:user@UREALM', '-', r1.keytab])
 
 r1.stop()
 r2.stop()

@@ -55,7 +55,7 @@
 
 \title{Kerberos Administration Guide}
 \date{ }
-\release{1.18.2}
+\release{1.19.2}
 \author{MIT}
 \newcommand{\sphinxlogo}{\vbox{}}
 \renewcommand{\releasename}{Release}
@@ -78,23 +78,24 @@
 \subsection{Installing KDCs}
 \label{\detokenize{admin/install_kdc:installing-kdcs}}\label{\detokenize{admin/install_kdc::doc}}
 When setting up Kerberos in a production environment, it is best to
-have multiple replica KDCs alongside with a master KDC to ensure the
+have multiple replica KDCs alongside with a primary KDC to ensure the
 continued availability of the Kerberized services.  Each KDC contains
-a copy of the Kerberos database.  The master KDC contains the writable
-copy of the realm database, which it replicates to the replica KDCs at
-regular intervals.  All database changes (such as password changes)
-are made on the master KDC.  Replica KDCs provide Kerberos
-ticket-granting services, but not database administration, when the
-master KDC is unavailable.  MIT recommends that you install all of
-your KDCs to be able to function as either the master or one of the
-replicas.  This will enable you to easily switch your master KDC with
-one of the replicas if necessary (see {\hyperref[\detokenize{admin/install_kdc:switch-master-replica}]{\sphinxcrossref{\DUrole{std,std-ref}{Switching master and replica KDCs}}}}).
-This installation procedure is based on that recommendation.
+a copy of the Kerberos database.  The primary KDC contains the
+writable copy of the realm database, which it replicates to the
+replica KDCs at regular intervals.  All database changes (such as
+password changes) are made on the primary KDC.  Replica KDCs provide
+Kerberos ticket-granting services, but not database administration,
+when the primary KDC is unavailable.  MIT recommends that you install
+all of your KDCs to be able to function as either the primary or one
+of the replicas.  This will enable you to easily switch your primary
+KDC with one of the replicas if necessary (see
+{\hyperref[\detokenize{admin/install_kdc:switch-primary-replica}]{\sphinxcrossref{\DUrole{std,std-ref}{Switching primary and replica KDCs}}}}).  This installation procedure is based
+on that recommendation.
 
 \begin{sphinxadmonition}{warning}{Warning:}\begin{itemize}
 \item {} 
 The Kerberos system relies on the availability of correct time
-information.  Ensure that the master and all replica KDCs have
+information.  Ensure that the primary and all replica KDCs have
 properly synchronized clocks.
 
 \item {} 
@@ -109,8 +110,8 @@ database.
 \end{sphinxadmonition}
 
 
-\subsubsection{Install and configure the master KDC}
-\label{\detokenize{admin/install_kdc:install-and-configure-the-master-kdc}}
+\subsubsection{Install and configure the primary KDC}
+\label{\detokenize{admin/install_kdc:install-and-configure-the-primary-kdc}}
 Install Kerberos either from the OS-provided packages or from the
 source (See \DUrole{xref,std,std-ref}{do\_build}).
 
@@ -120,7 +121,7 @@ names:
 
 \fvset{hllines={, ,}}%
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{n}{kerberos}\PYG{o}{.}\PYG{n}{mit}\PYG{o}{.}\PYG{n}{edu}    \PYG{o}{\PYGZhy{}} \PYG{n}{master} \PYG{n}{KDC}
+\PYG{n}{kerberos}\PYG{o}{.}\PYG{n}{mit}\PYG{o}{.}\PYG{n}{edu}    \PYG{o}{\PYGZhy{}} \PYG{n}{primary} \PYG{n}{KDC}
 \PYG{n}{kerberos}\PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.}\PYG{n}{mit}\PYG{o}{.}\PYG{n}{edu}  \PYG{o}{\PYGZhy{}} \PYG{n}{replica} \PYG{n}{KDC}
 \PYG{n}{ATHENA}\PYG{o}{.}\PYG{n}{MIT}\PYG{o}{.}\PYG{n}{EDU}      \PYG{o}{\PYGZhy{}} \PYG{n}{realm} \PYG{n}{name}
 \PYG{o}{.}\PYG{n}{k5}\PYG{o}{.}\PYG{n}{ATHENA}\PYG{o}{.}\PYG{n}{MIT}\PYG{o}{.}\PYG{n}{EDU}  \PYG{o}{\PYGZhy{}} \PYG{n}{stash} \PYG{n}{file}
@@ -233,7 +234,7 @@ You have to have write permission on the target directories
 
 \subsubsection{Create the KDC database}
 \label{\detokenize{admin/install_kdc:create-the-kdc-database}}\label{\detokenize{admin/install_kdc:create-db}}
-You will use the {\hyperref[\detokenize{admin/admin_commands/kdb5_util:kdb5-util-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kdb5\_util}}}} command on the master KDC to
+You will use the {\hyperref[\detokenize{admin/admin_commands/kdb5_util:kdb5-util-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kdb5\_util}}}} command on the primary KDC to
 create the Kerberos database and the optional \DUrole{xref,std,std-ref}{stash\_definition}.
 
 \begin{sphinxadmonition}{note}{Note:}
@@ -257,7 +258,7 @@ substituting the numeral “4” for the word “for”, and includes the
 punctuation mark at the end.)
 
 The following is an example of how to create a Kerberos database and
-stash file on the master KDC, using the {\hyperref[\detokenize{admin/admin_commands/kdb5_util:kdb5-util-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kdb5\_util}}}} command.
+stash file on the primary KDC, using the {\hyperref[\detokenize{admin/admin_commands/kdb5_util:kdb5-util-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kdb5\_util}}}} command.
 Replace \sphinxcode{ATHENA.MIT.EDU} with the name of your Kerberos realm:
 
 \fvset{hllines={, ,}}%
@@ -315,10 +316,10 @@ are allowed to administer Kerberos database) to the Kerberos database.
 You \sphinxstyleemphasis{must} add at least one principal now to allow communication
 between the Kerberos administration daemon kadmind and the kadmin
 program over the network for further administration.  To do this, use
-the kadmin.local utility on the master KDC.  kadmin.local is designed
-to be run on the master KDC host without using Kerberos authentication
-to an admin server; instead, it must have read and write access to the
-Kerberos database on the local filesystem.
+the kadmin.local utility on the primary KDC.  kadmin.local is designed
+to be run on the primary KDC host without using Kerberos
+authentication to an admin server; instead, it must have read and
+write access to the Kerberos database on the local filesystem.
 
 The administrative principals you create should be the ones you added
 to the ACL file (see {\hyperref[\detokenize{admin/install_kdc:admin-acl}]{\sphinxcrossref{\DUrole{std,std-ref}{Add administrators to the ACL file}}}}).
@@ -341,10 +342,10 @@ is created:
 \end{sphinxVerbatim}
 
 
-\subsubsection{Start the Kerberos daemons on the master KDC}
-\label{\detokenize{admin/install_kdc:start-the-kerberos-daemons-on-the-master-kdc}}\label{\detokenize{admin/install_kdc:start-kdc-daemons}}
+\subsubsection{Start the Kerberos daemons on the primary KDC}
+\label{\detokenize{admin/install_kdc:start-the-kerberos-daemons-on-the-primary-kdc}}\label{\detokenize{admin/install_kdc:start-kdc-daemons}}
 At this point, you are ready to start the Kerberos KDC
-({\hyperref[\detokenize{admin/admin_commands/krb5kdc:krb5kdc-8}]{\sphinxcrossref{\DUrole{std,std-ref}{krb5kdc}}}}) and administrative daemons on the Master KDC.  To
+({\hyperref[\detokenize{admin/admin_commands/krb5kdc:krb5kdc-8}]{\sphinxcrossref{\DUrole{std,std-ref}{krb5kdc}}}}) and administrative daemons on the primary KDC.  To
 do so, type:
 
 \fvset{hllines={, ,}}%
@@ -393,9 +394,10 @@ You are now ready to start configuring the replica KDCs.
 
 \begin{sphinxadmonition}{note}{Note:}
 Assuming you are setting the KDCs up so that you can easily
-switch the master KDC with one of the replicas, you should
-perform each of these steps on the master KDC as well as the
-replica KDCs, unless these instructions specify otherwise.
+switch the primary KDC with one of the replicas, you should
+perform each of these steps on the primary KDC as well as
+the replica KDCs, unless these instructions specify
+otherwise.
 \end{sphinxadmonition}
 
 
@@ -403,11 +405,11 @@ replica KDCs, unless these instructions specify otherwise.
 \label{\detokenize{admin/install_kdc:create-host-keytabs-for-replica-kdcs}}\label{\detokenize{admin/install_kdc:replica-host-key}}
 Each KDC needs a \sphinxcode{host} key in the Kerberos database.  These keys
 are used for mutual authentication when propagating the database dump
-file from the master KDC to the secondary KDC servers.
+file from the primary KDC to the secondary KDC servers.
 
-On the master KDC, connect to administrative interface and create the
+On the primary KDC, connect to administrative interface and create the
 host principal for each of the KDCs’ \sphinxcode{host} services.  For example,
-if the master KDC were called \sphinxcode{kerberos.mit.edu}, and you had a
+if the primary KDC were called \sphinxcode{kerberos.mit.edu}, and you had a
 replica KDC named \sphinxcode{kerberos-1.mit.edu}, you would type the
 following:
 
@@ -423,9 +425,9 @@ following:
 \PYG{n}{Principal} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{host/kerberos\PYGZhy{}1.mit.edu@ATHENA.MIT.EDU}\PYG{l+s+s2}{\PYGZdq{}} \PYG{n}{created}\PYG{o}{.}
 \end{sphinxVerbatim}
 
-It is not strictly necessary to have the master KDC server in the
+It is not strictly necessary to have the primary KDC server in the
 Kerberos database, but it can be handy if you want to be able to swap
-the master KDC with one of the replicas.
+the primary KDC with one of the replicas.
 
 Next, extract \sphinxcode{host} random keys for all participating KDCs and
 store them in each host’s default keytab file.  Ideally, you should
@@ -448,7 +450,7 @@ To extract a keytab directly on a replica KDC called
 \end{sphinxVerbatim}
 
 If you are instead extracting a keytab for the replica KDC called
-\sphinxcode{kerberos-1.mit.edu} on the master KDC, you should use a dedicated
+\sphinxcode{kerberos-1.mit.edu} on the primary KDC, you should use a dedicated
 temporary keytab file for that machine’s keytab:
 
 \fvset{hllines={, ,}}%
@@ -466,10 +468,10 @@ The file \sphinxcode{/tmp/kerberos-1.keytab} can then be installed as
 
 \paragraph{Configure replica KDCs}
 \label{\detokenize{admin/install_kdc:configure-replica-kdcs}}
-Database propagation copies the contents of the master’s database, but
-does not propagate configuration files, stash files, or the kadm5 ACL
-file.  The following files must be copied by hand to each replica (see
-{\hyperref[\detokenize{mitK5defaults:mitk5defaults}]{\sphinxcrossref{\DUrole{std,std-ref}{MIT Kerberos defaults}}}} for the default locations for these files):
+Database propagation copies the contents of the primary’s database,
+but does not propagate configuration files, stash files, or the kadm5
+ACL file.  The following files must be copied by hand to each replica
+(see {\hyperref[\detokenize{mitK5defaults:mitk5defaults}]{\sphinxcrossref{\DUrole{std,std-ref}{MIT Kerberos defaults}}}} for the default locations for these files):
 \begin{itemize}
 \item {} 
 krb5.conf
@@ -486,11 +488,11 @@ master key stash file
 \end{itemize}
 
 Move the copied files into their appropriate directories, exactly as
-on the master KDC.  kadm5.acl is only needed to allow a replica to
-swap with the master KDC.
+on the primary KDC.  kadm5.acl is only needed to allow a replica to
+swap with the primary KDC.
 
-The database is propagated from the master KDC to the replica KDCs via
-the {\hyperref[\detokenize{admin/admin_commands/kpropd:kpropd-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kpropd}}}} daemon.  You must explicitly specify the
+The database is propagated from the primary KDC to the replica KDCs
+via the {\hyperref[\detokenize{admin/admin_commands/kpropd:kpropd-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kpropd}}}} daemon.  You must explicitly specify the
 principals which are allowed to provide Kerberos dump updates on the
 replica machine with a new database.  Create a file named kpropd.acl
 in the KDC state directory containing the \sphinxcode{host} principals for each
@@ -503,11 +505,11 @@ of the KDCs:
 \end{sphinxVerbatim}
 
 \begin{sphinxadmonition}{note}{Note:}
-If you expect that the master and replica KDCs will be
+If you expect that the primary and replica KDCs will be
 switched at some point of time, list the host principals
 from all participating KDC servers in kpropd.acl files on
 all of the KDCs.  Otherwise, you only need to list the
-master KDC’s host principal in the kpropd.acl files of the
+primary KDC’s host principal in the kpropd.acl files of the
 replica KDCs.
 \end{sphinxadmonition}
 
@@ -534,15 +536,15 @@ Alternatively, start {\hyperref[\detokenize{admin/admin_commands/kpropd:kpropd-8
 required when incremental propagation is enabled.
 
 Now that the replica KDC is able to accept database propagation,
-you’ll need to propagate the database from the master server.
+you’ll need to propagate the database from the primary server.
 
 NOTE: Do not start the replica KDC yet; you still do not have a copy
-of the master’s database.
+of the primary’s database.
 
 
 \paragraph{Propagate the database to each replica KDC}
 \label{\detokenize{admin/install_kdc:kprop-to-replicas}}\label{\detokenize{admin/install_kdc:propagate-the-database-to-each-replica-kdc}}
-First, create a dump file of the database on the master KDC, as
+First, create a dump file of the database on the primary KDC, as
 follows:
 
 \fvset{hllines={, ,}}%
@@ -593,7 +595,7 @@ start the krb5kdc daemon:
 \PYG{n}{shell}\PYG{o}{\PYGZpc{}} \PYG{n}{krb5kdc}
 \end{sphinxVerbatim}
 
-As with the master KDC, you will probably want to add this command to
+As with the primary KDC, you will probably want to add this command to
 the KDCs’ \sphinxcode{/etc/rc} or \sphinxcode{/etc/inittab} files, so they will start
 the krb5kdc daemon automatically at boot time.
 
@@ -624,23 +626,23 @@ services into the Kerberos database.  This procedure is described
 fully in {\hyperref[\detokenize{admin/database:add-mod-del-princs}]{\sphinxcrossref{\DUrole{std,std-ref}{Adding, modifying and deleting principals}}}}.
 
 You may occasionally want to use one of your replica KDCs as the
-master.  This might happen if you are upgrading the master KDC, or if
-your master KDC has a disk crash.  See the following section for the
-instructions.
+primary.  This might happen if you are upgrading the primary KDC, or
+if your primary KDC has a disk crash.  See the following section for
+the instructions.
 
 
-\subsubsection{Switching master and replica KDCs}
-\label{\detokenize{admin/install_kdc:switch-master-replica}}\label{\detokenize{admin/install_kdc:switching-master-and-replica-kdcs}}
+\subsubsection{Switching primary and replica KDCs}
+\label{\detokenize{admin/install_kdc:switch-primary-replica}}\label{\detokenize{admin/install_kdc:switching-primary-and-replica-kdcs}}
 You may occasionally want to use one of your replica KDCs as the
-master.  This might happen if you are upgrading the master KDC, or if
-your master KDC has a disk crash.
+primary.  This might happen if you are upgrading the primary KDC, or
+if your primary KDC has a disk crash.
 
 Assuming you have configured all of your KDCs to be able to function
-as either the master KDC or a replica KDC (as this document
+as either the primary KDC or a replica KDC (as this document
 recommends), all you need to do to make the changeover is:
 
-If the master KDC is still running, do the following on the \sphinxstyleemphasis{old}
-master KDC:
+If the primary KDC is still running, do the following on the \sphinxstyleemphasis{old}
+primary KDC:
 \begin{enumerate}
 \item {} 
 Kill the kadmind process.
@@ -655,17 +657,17 @@ replicas all have the latest copy of the database (see
 
 \end{enumerate}
 
-On the \sphinxstyleemphasis{new} master KDC:
+On the \sphinxstyleemphasis{new} primary KDC:
 \begin{enumerate}
 \item {} 
-Start the {\hyperref[\detokenize{admin/admin_commands/kadmind:kadmind-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmind}}}} daemon (see {\hyperref[\detokenize{admin/install_kdc:start-kdc-daemons}]{\sphinxcrossref{\DUrole{std,std-ref}{Start the Kerberos daemons on the master KDC}}}}).
+Start the {\hyperref[\detokenize{admin/admin_commands/kadmind:kadmind-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmind}}}} daemon (see {\hyperref[\detokenize{admin/install_kdc:start-kdc-daemons}]{\sphinxcrossref{\DUrole{std,std-ref}{Start the Kerberos daemons on the primary KDC}}}}).
 
 \item {} 
 Set up the cron job to propagate the database (see
 {\hyperref[\detokenize{admin/install_kdc:kprop-to-replicas}]{\sphinxcrossref{\DUrole{std,std-ref}{Propagate the database to each replica KDC}}}}).
 
 \item {} 
-Switch the CNAMEs of the old and new master KDCs.  If you can’t do
+Switch the CNAMEs of the old and new primary KDCs.  If you can’t do
 this, you’ll need to change the {\hyperref[\detokenize{admin/conf_files/krb5_conf:krb5-conf-5}]{\sphinxcrossref{\DUrole{std,std-ref}{krb5.conf}}}} file on every
 client machine in your Kerberos realm.
 
@@ -1067,11 +1069,10 @@ Indicate whether name lookups will be used to canonicalize
 hostnames for use in service principal names.  Setting this flag
 to false can improve security by reducing reliance on DNS, but
 means that short hostnames will not be canonicalized to
-fully-qualified hostnames.  The default value is true.
-
-If this option is set to \sphinxcode{fallback} (new in release 1.18), DNS
-canonicalization will only be performed the server hostname is not
-found with the original name when requesting credentials.
+fully-qualified hostnames.  If this option is set to \sphinxcode{fallback} (new
+in release 1.18), DNS canonicalization will only be performed the
+server hostname is not found with the original name when
+requesting credentials.  The default value is true.
 
 \item[{\sphinxstylestrong{dns\_lookup\_kdc}}] \leavevmode
 Indicate whether DNS SRV records should be used to locate the KDCs
@@ -1285,6 +1286,12 @@ If this flag is true, then an attempt to verify initial
 credentials will fail if the client machine does not have a
 keytab.  The default value is false.
 
+\item[{\sphinxstylestrong{client\_aware\_channel\_bindings}}] \leavevmode
+If this flag is true, then all application protocol authentication
+requests will be flagged to indicate that the application supports
+channel bindings when operating over a secure channel.  The
+default value is false.
+
 \end{description}
 
 
@@ -1297,7 +1304,7 @@ following tags may be specified in the realm’s subsection:
 \begin{description}
 \item[{\sphinxstylestrong{admin\_server}}] \leavevmode
 Identifies the host where the administration server is running.
-Typically, this is the master Kerberos server.  This tag must be
+Typically, this is the primary Kerberos server.  This tag must be
 given a value in order to communicate with the {\hyperref[\detokenize{admin/admin_commands/kadmind:kadmind-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmind}}}}
 server for the realm.
 
@@ -1416,12 +1423,16 @@ by \sphinxstylestrong{dns\_lookup\_kdc}).  Finally, port 464 on the \sphinxstyle
 host will be tried.
 
 \item[{\sphinxstylestrong{master\_kdc}}] \leavevmode
-Identifies the master KDC(s).  Currently, this tag is used in only
+The name for \sphinxstylestrong{primary\_kdc} prior to release 1.19.  Its value is
+used as a fallback if \sphinxstylestrong{primary\_kdc} is not specified.
+
+\item[{\sphinxstylestrong{primary\_kdc}}] \leavevmode
+Identifies the primary KDC(s).  Currently, this tag is used in only
 one case: If an attempt to get credentials fails because of an
 invalid password, the client software will attempt to contact the
-master KDC, in case the user’s password has just been changed, and
+primary KDC, in case the user’s password has just been changed, and
 the updated database has not been propagated to the replica
-servers yet.
+servers yet.  New in release 1.19.
 
 \item[{\sphinxstylestrong{v4\_instance\_convert}}] \leavevmode
 This subsection allows the administrator to configure exceptions
@@ -2068,10 +2079,9 @@ The default is 2048.
 \item[{\sphinxstylestrong{pkinit\_identities}}] \leavevmode
 Specifies the location(s) to be used to find the user’s X.509
 identity information.  If this option is specified multiple times,
-the first valid value is used; this can be used to specify an
-environment variable (with \sphinxstylestrong{ENV:}\sphinxstyleemphasis{envvar}) followed by a
-default value.  Note that these values are not used if the user
-specifies \sphinxstylestrong{X509\_user\_identity} on the command line.
+each value is attempted in order until certificates are found.
+Note that these values are not used if the user specifies
+\sphinxstylestrong{X509\_user\_identity} on the command line.
 
 \item[{\sphinxstylestrong{pkinit\_kdc\_hostname}}] \leavevmode
 The presence of this option indicates that the client is willing
@@ -2228,7 +2238,7 @@ Here is an example of a generic krb5.conf file:
         \PYG{n}{kdc} \PYG{o}{=} \PYG{n}{kerberos}\PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.}\PYG{n}{mit}\PYG{o}{.}\PYG{n}{edu}
         \PYG{n}{kdc} \PYG{o}{=} \PYG{n}{kerberos}\PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{2.}\PYG{n}{mit}\PYG{o}{.}\PYG{n}{edu}
         \PYG{n}{admin\PYGZus{}server} \PYG{o}{=} \PYG{n}{kerberos}\PYG{o}{.}\PYG{n}{mit}\PYG{o}{.}\PYG{n}{edu}
-        \PYG{n}{master\PYGZus{}kdc} \PYG{o}{=} \PYG{n}{kerberos}\PYG{o}{.}\PYG{n}{mit}\PYG{o}{.}\PYG{n}{edu}
+        \PYG{n}{primary\PYGZus{}kdc} \PYG{o}{=} \PYG{n}{kerberos}\PYG{o}{.}\PYG{n}{mit}\PYG{o}{.}\PYG{n}{edu}
     \PYG{p}{\PYGZcb{}}
     \PYG{n}{EXAMPLE}\PYG{o}{.}\PYG{n}{COM} \PYG{o}{=} \PYG{p}{\PYGZob{}}
         \PYG{n}{kdc} \PYG{o}{=} \PYG{n}{kerberos}\PYG{o}{.}\PYG{n}{example}\PYG{o}{.}\PYG{n}{com}
@@ -2522,14 +2532,19 @@ not marked as host-based by the client.
 (Boolean value.)  Specifies whether incremental database
 propagation is enabled.  The default value is false.
 
-\item[{\sphinxstylestrong{iprop\_master\_ulogsize}}] \leavevmode
+\item[{\sphinxstylestrong{iprop\_ulogsize}}] \leavevmode
 (Integer.)  Specifies the maximum number of log entries to be
 retained for incremental propagation.  The default value is 1000.
-Prior to release 1.11, the maximum value was 2500.
+Prior to release 1.11, the maximum value was 2500.  New in release
+1.19.
+
+\item[{\sphinxstylestrong{iprop\_master\_ulogsize}}] \leavevmode
+The name for \sphinxstylestrong{iprop\_ulogsize} prior to release 1.19.  Its value is
+used as a fallback if \sphinxstylestrong{iprop\_ulogsize} is not specified.
 
 \item[{\sphinxstylestrong{iprop\_replica\_poll}}] \leavevmode
 (Delta time string.)  Specifies how often the replica KDC polls
-for new updates from the master.  The default value is \sphinxcode{2m}
+for new updates from the primary.  The default value is \sphinxcode{2m}
 (that is, two minutes).  New in release 1.17.
 
 \item[{\sphinxstylestrong{iprop\_slave\_poll}}] \leavevmode
@@ -2553,7 +2568,7 @@ address at the port specified in \sphinxstylestrong{iprop\_port}.  New in releas
 (Port number.)  Specifies the port number to be used for
 incremental propagation.  When \sphinxstylestrong{iprop\_enable} is true, this
 relation is required in the replica KDC configuration file, and
-this relation or \sphinxstylestrong{iprop\_listen} is required in the master
+this relation or \sphinxstylestrong{iprop\_listen} is required in the primary
 configuration file, as there is no default port number.  Port
 numbers specified in \sphinxstylestrong{iprop\_listen} entries will override this
 port number for the {\hyperref[\detokenize{admin/admin_commands/kadmind:kadmind-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmind}}}} daemon.
@@ -3190,8 +3205,8 @@ in PKINIT requests.  The default value is false.  (New in release
 \label{\detokenize{admin/conf_files/kdc_conf:id6}}\label{\detokenize{admin/conf_files/kdc_conf:encryption-types}}
 Any tag in the configuration files which requires a list of encryption
 types can be set to some combination of the following strings.
-Encryption types marked as “weak” are available for compatibility but
-not recommended for use.
+Encryption types marked as “weak” and “deprecated” are available for
+compatibility but not recommended for use.
 
 
 \begin{savenotes}\sphinxattablestart
@@ -3206,7 +3221,7 @@ Triple DES cbc mode raw (weak)
 \hline
 des3-cbc-sha1 des3-hmac-sha1 des3-cbc-sha1-kd
 &
-Triple DES cbc mode with HMAC/sha1
+Triple DES cbc mode with HMAC/sha1 (deprecated)
 \\
 \hline
 aes256-cts-hmac-sha1-96 aes256-cts aes256-sha1
@@ -3231,7 +3246,7 @@ AES-128 CTS mode with 128-bit SHA-256 HMAC
 \hline
 arcfour-hmac rc4-hmac arcfour-hmac-md5
 &
-RC4 with HMAC/MD5
+RC4 with HMAC/MD5 (deprecated)
 \\
 \hline
 arcfour-hmac-exp rc4-hmac-exp arcfour-hmac-md5-exp
@@ -3649,10 +3664,10 @@ not be using the default ports.
 How many replica KDCs you need and where they should be located.
 
 \item {} 
-The hostnames of your master and replica KDCs.
+The hostnames of your primary and replica KDCs.
 
 \item {} 
-How frequently you will propagate the database from the master KDC
+How frequently you will propagate the database from the primary KDC
 to the replica KDCs.
 
 \end{itemize}
@@ -3744,7 +3759,7 @@ port numbers used by the Kerberos V5 programs, refer to the
 \section{Replica KDCs}
 \label{\detokenize{admin/realm_config:replica-kdcs}}
 Replica KDCs provide an additional source of Kerberos ticket-granting
-services in the event of inaccessibility of the master KDC.  The
+services in the event of inaccessibility of the primary KDC.  The
 number of replica KDCs you need and the decision of where to place them,
 both physically and logically, depends on the specifics of your
 network.
@@ -3756,7 +3771,7 @@ be unavailable and have a replica KDC to take up the slack.
 Some considerations include:
 \begin{itemize}
 \item {} 
-Have at least one replica KDC as a backup, for when the master KDC
+Have at least one replica KDC as a backup, for when the primary KDC
 is down, is being upgraded, or is otherwise unavailable.
 
 \item {} 
@@ -3767,8 +3782,8 @@ KDC accessible to each segment.
 
 \item {} 
 If possible, have at least one replica KDC in a different building
-from the master, in case of power outages, fires, or other localized
-disasters.
+from the primary, in case of power outages, fires, or other
+localized disasters.
 
 \end{itemize}
 
@@ -3776,7 +3791,7 @@ disasters.
 \section{Hostnames for KDCs}
 \label{\detokenize{admin/realm_config:kdc-hostnames}}\label{\detokenize{admin/realm_config:hostnames-for-kdcs}}
 MIT recommends that your KDCs have a predefined set of CNAME records
-(DNS hostname aliases), such as \sphinxcode{kerberos} for the master KDC and
+(DNS hostname aliases), such as \sphinxcode{kerberos} for the primary KDC and
 \sphinxcode{kerberos-1}, \sphinxcode{kerberos-2}, … for the replica KDCs.  This way,
 if you need to swap a machine, you only need to change a DNS entry,
 rather than having to change hostnames.
@@ -3795,34 +3810,37 @@ the most often.  Normally you should list port 88 on each of your
 KDCs.
 
 \item[{\_kerberos.\_tcp}] \leavevmode
-This is for contacting any KDC by TCP.  The MIT KDC by default
-will not listen on any TCP ports, so unless you’ve changed the
-configuration or you’re running another KDC implementation, you
-should leave this unspecified.  If you do enable TCP support,
-normally you should use port 88.
+This is for contacting any KDC by TCP.  Normally you should use
+port 88.  This entry should be omitted if the KDC does not listen
+on TCP ports, as was the default prior to release 1.13.
 
 \item[{\_kerberos-master.\_udp}] \leavevmode
 This entry should refer to those KDCs, if any, that will
 immediately see password changes to the Kerberos database.  If a
 user is logging in and the password appears to be incorrect, the
-client will retry with the master KDC before failing with an
+client will retry with the primary KDC before failing with an
 “incorrect password” error given.
 
 If you have only one KDC, or for whatever reason there is no
 accessible KDC that would get database changes faster than the
-others, you do not need to define this entry.
-
-\item[{\_kerberos-adm.\_tcp}] \leavevmode
-This should list port 749 on your master KDC.  Support for it is
+others, you do not need to define this entry.  \_kerberos-adm.\_tcp
+This should list port 749 on your primary KDC.  Support for it is
 not complete at this time, but it will eventually be used by the
 {\hyperref[\detokenize{admin/admin_commands/kadmin_local:kadmin-1}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmin}}}} program and related utilities.  For now, you will
 also need the \sphinxstylestrong{admin\_server} variable in {\hyperref[\detokenize{admin/conf_files/krb5_conf:krb5-conf-5}]{\sphinxcrossref{\DUrole{std,std-ref}{krb5.conf}}}}.
 
+\item[{\_kerberos-master.\_tcp}] \leavevmode
+The corresponding TCP port for \_kerberos-master.\_udp, assuming the
+primary KDC listens on a TCP port.
+
 \item[{\_kpasswd.\_udp}] \leavevmode
-This should list port 464 on your master KDC.  It is used when a
-user changes her password.  If this entry is not defined but a
-\_kerberos-adm.\_tcp entry is defined, the client will use the
-\_kerberos-adm.\_tcp entry with the port number changed to 749.
+This entry should list port 464 on your primary KDC.  It is used
+when a user changes her password.  If this entry is not defined
+but a \_kerberos-adm.\_tcp entry is defined, the client will use the
+\_kerberos-adm.\_tcp entry with the port number changed to 464.
+
+\item[{\_kpasswd.\_tcp}] \leavevmode
+The corresponding TCP port for \_kpasswd.\_udp.
 
 \end{description}
 
@@ -3858,8 +3876,8 @@ unconfigured clients, and be useful for other sites.
 As of MIT krb5 1.15, clients can also locate KDCs in DNS through URI
 records (\index{RFC!RFC 7553}\sphinxhref{https://tools.ietf.org/html/rfc7553.html}{\sphinxstylestrong{RFC 7553}}).  Limitations with the SRV record format may
 result in extra DNS queries in situations where a client must failover
-to other transport types, or find a master server.  The URI record can
-convey more information about a realm’s KDCs with a single query.
+to other transport types, or find a primary server.  The URI record
+can convey more information about a realm’s KDCs with a single query.
 
 The client performs a query for the following URI records:
 \begin{itemize}
@@ -3884,8 +3902,8 @@ consists of case-insensitive colon separated fields, in the form
 
 \item {} 
 \sphinxstyleemphasis{flags} contains zero or more flag characters.  Currently the only
-valid flag is \sphinxcode{m}, which indicates that the record is for a master
-server.
+valid flag is \sphinxcode{m}, which indicates that the record is for a
+primary server.
 
 \item {} 
 \sphinxstyleemphasis{transport} defines the transport type of the residual URL or
@@ -3919,7 +3937,7 @@ records are found.
 
 \section{Database propagation}
 \label{\detokenize{admin/realm_config:database-propagation}}\label{\detokenize{admin/realm_config:db-prop}}
-The Kerberos database resides on the master KDC, and must be
+The Kerberos database resides on the primary KDC, and must be
 propagated regularly (usually by a cron job) to the replica KDCs.  In
 deciding how frequently the propagation should happen, you will need
 to balance the amount of time the propagation takes against the
@@ -3930,7 +3948,7 @@ If the propagation time is longer than this maximum reasonable time
 (e.g., you have a particularly large database, you have a lot of
 replicas, or you experience frequent network delays), you may wish to
 cut down on your propagation delay by performing the propagation in
-parallel.  To do this, have the master KDC propagate the database to
+parallel.  To do this, have the primary KDC propagate the database to
 one set of replicas, and then have each of these replicas propagate
 the database to additional replicas.
 
@@ -3964,8 +3982,8 @@ local filesystem (or through LDAP).  kadmin.local is necessary to set
 up enough of the database to be able to use the remote version.
 
 kadmin can authenticate to the admin server using the service
-principal \sphinxcode{kadmin/HOST} (where \sphinxstyleemphasis{HOST} is the hostname of the admin
-server) or \sphinxcode{kadmin/admin}.  If the credentials cache contains a
+principal \sphinxcode{kadmin/admin} or \sphinxcode{kadmin/HOST} (where \sphinxstyleemphasis{HOST} is the
+hostname of the admin server).  If the credentials cache contains a
 ticket for either service principal and the \sphinxstylestrong{-c} ccache option is
 specified, that ticket is used to authenticate to KADM5.  Otherwise,
 the \sphinxstylestrong{-p} and \sphinxstylestrong{-k} options are used to specify the client Kerberos
@@ -4039,10 +4057,10 @@ principal.  As of release 1.8, the MIT Kerberos KDC only supports
 fully anonymous operation.
 
 \item[{\sphinxstylestrong{-c} \sphinxstyleemphasis{credentials\_cache}}] \leavevmode
-Use \sphinxstyleemphasis{credentials\_cache} as the credentials cache.  The
-cache should contain a service ticket for the \sphinxcode{kadmin/ADMINHOST}
-(where \sphinxstyleemphasis{ADMINHOST} is the fully-qualified hostname of the admin
-server) or \sphinxcode{kadmin/admin} service; it can be acquired with the
+Use \sphinxstyleemphasis{credentials\_cache} as the credentials cache.  The cache
+should contain a service ticket for the \sphinxcode{kadmin/admin} or
+\sphinxcode{kadmin/ADMINHOST} (where \sphinxstyleemphasis{ADMINHOST} is the fully-qualified
+hostname of the admin server) service; it can be acquired with the
 \DUrole{xref,std,std-ref}{kinit(1)} program.  If this option is not specified, kadmin
 requests a new service ticket from the KDC, and stores it in its
 own temporary ccache.
@@ -4490,7 +4508,7 @@ expression.
 
 This command requires the \sphinxstylestrong{list} privilege.
 
-Alias: \sphinxstylestrong{listprincs}, \sphinxstylestrong{get\_principals}, \sphinxstylestrong{get\_princs}
+Alias: \sphinxstylestrong{listprincs}, \sphinxstylestrong{get\_principals}, \sphinxstylestrong{getprincs}
 
 Example:
 
@@ -4729,7 +4747,7 @@ tabs.
 
 This command requires the \sphinxstylestrong{inquire} privilege.
 
-Alias: getpol
+Alias: \sphinxstylestrong{getpol}
 
 Examples:
 
@@ -4796,7 +4814,7 @@ be modified by using the \sphinxstylestrong{-policy} or \sphinxstylestrong{-clea
 
 
 \subsection{Updating the history key}
-\label{\detokenize{admin/database:updating-the-history-key}}
+\label{\detokenize{admin/database:updating-history-key}}\label{\detokenize{admin/database:updating-the-history-key}}
 If a policy specifies a number of old keys kept of two or more, the
 stored old keys are encrypted in a history key, which is found in the
 key data of the \sphinxcode{kadmin/history} principal.
@@ -5166,15 +5184,15 @@ shell\PYGZpc{}
 
 
 \subsection{Updating the master key}
-\label{\detokenize{admin/database:updating-the-master-key}}
+\label{\detokenize{admin/database:updating-master-key}}\label{\detokenize{admin/database:updating-the-master-key}}
 Starting with release 1.7, {\hyperref[\detokenize{admin/admin_commands/kdb5_util:kdb5-util-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kdb5\_util}}}} allows the master key
 to be changed using a rollover process, with minimal loss of
 availability.  To roll over the master key, follow these steps:
 \begin{enumerate}
 \item {} 
-On the master KDC, run \sphinxcode{kdb5\_util list\_mkeys} to view the current
-master key version number (KVNO).  If you have never rolled over
-the master key before, this will likely be version 1:
+On the primary KDC, run \sphinxcode{kdb5\_util list\_mkeys} to view the
+current master key version number (KVNO).  If you have never rolled
+over the master key before, this will likely be version 1:
 
 \fvset{hllines={, ,}}%
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
@@ -5184,13 +5202,13 @@ KVNO: 1, Enctype: aes256\PYGZhy{}cts\PYGZhy{}hmac\PYGZhy{}sha384\PYGZhy{}192, Ac
 \end{sphinxVerbatim}
 
 \item {} 
-On the master KDC, run \sphinxcode{kdb5\_util use\_mkey 1} to ensure that a
+On the primary KDC, run \sphinxcode{kdb5\_util use\_mkey 1} to ensure that a
 master key activation list is present in the database.  This step
 is unnecessary in release 1.11.4 or later, or if the database was
 initially created with release 1.7 or later.
 
 \item {} 
-On the master KDC, run \sphinxcode{kdb5\_util add\_mkey -s} to create a new
+On the primary KDC, run \sphinxcode{kdb5\_util add\_mkey -s} to create a new
 master key and write it to the stash file.  Enter a secure password
 when prompted.  If this is the first time you are changing the
 master key, the new key will have version 2.  The new master key
@@ -5207,7 +5225,7 @@ the new master key is present, and then \sphinxcode{kdb5\_util stash} to
 write the new master key to the replica KDC’s stash file.
 
 \item {} 
-On the master KDC, run \sphinxcode{kdb5\_util use\_mkey 2} to begin using the
+On the primary KDC, run \sphinxcode{kdb5\_util use\_mkey 2} to begin using the
 new master key.  Replace \sphinxcode{2} with the version of the new master
 key, as appropriate.  You can optionally specify a date for the new
 master key to become active; by default, it will become active
@@ -5215,10 +5233,10 @@ immediately.  Prior to release 1.12, {\hyperref[\detokenize{admin/admin_commands
 restarted for this change to take full effect.
 
 \item {} 
-On the master KDC, run \sphinxcode{kdb5\_util update\_princ\_encryption}.  This
-command will iterate over the database and re-encrypt all keys in
-the new master key.  If the database is large and uses DB2, the
-master KDC will become unavailable while this command runs, but
+On the primary KDC, run \sphinxcode{kdb5\_util update\_princ\_encryption}.
+This command will iterate over the database and re-encrypt all keys
+in the new master key.  If the database is large and uses DB2, the
+primary KDC will become unavailable while this command runs, but
 clients should fail over to replica KDCs (if any are present)
 during this time period.  In release 1.13 and later, you can
 instead run \sphinxcode{kdb5\_util -x unlockiter update\_princ\_encryption} to
@@ -5231,7 +5249,7 @@ and until all running KDC and kadmind processes have serviced
 requests using updated principal entries.
 
 \item {} 
-On the master KDC, run \sphinxcode{kdb5\_util purge\_mkeys} to clean up the
+On the primary KDC, run \sphinxcode{kdb5\_util purge\_mkeys} to clean up the
 old master key.
 
 \end{enumerate}
@@ -5815,14 +5833,14 @@ Upgrading the KDC to release 1.14 or later will correct this bug.
 \label{\detokenize{admin/database:overview}}
 At some very large sites, dumping and transmitting the database can
 take more time than is desirable for changes to propagate from the
-master KDC to the replica KDCs.  The incremental propagation support
+primary KDC to the replica KDCs.  The incremental propagation support
 added in the 1.7 release is intended to address this.
 
-With incremental propagation enabled, all programs on the master KDC
+With incremental propagation enabled, all programs on the primary KDC
 that change the database also write information about the changes to
 an “update log” file, maintained as a circular buffer of a certain
 size.  A process on each replica KDC connects to a service on the
-master KDC (currently implemented in the {\hyperref[\detokenize{admin/admin_commands/kadmind:kadmind-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmind}}}} server) and
+primary KDC (currently implemented in the {\hyperref[\detokenize{admin/admin_commands/kadmind:kadmind-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmind}}}} server) and
 periodically requests the changes that have been made since the last
 check.  By default, this check is done every two minutes.
 
@@ -5853,14 +5871,14 @@ iprop\_replica\_poll
 &
 \sphinxstyleemphasis{time interval}
 &
-Indicates how often the replica should poll the master KDC for changes to the database. The default is two minutes.
+Indicates how often the replica should poll the primary KDC for changes to the database. The default is two minutes.
 \\
 \hline
 iprop\_port
 &
 \sphinxstyleemphasis{integer}
 &
-Specifies the port number to be used for incremental propagation. This is required in both master and replica configuration files.
+Specifies the port number to be used for incremental propagation. This is required in both primary and replica configuration files.
 \\
 \hline
 iprop\_resync\_timeout
@@ -5881,35 +5899,35 @@ Specifies where the update log file for the realm database is to be stored. The 
 \par
 \sphinxattableend\end{savenotes}
 
-Both master and replica sides must have a principal named
+Both primary and replica sides must have a principal named
 \sphinxcode{kiprop/hostname} (where \sphinxstyleemphasis{hostname} is the lowercase,
 fully-qualified, canonical name for the host) registered in the
 Kerberos database, and have keys for that principal stored in the
-default keytab file ({\hyperref[\detokenize{mitK5defaults:paths}]{\sphinxcrossref{\DUrole{std,std-ref}{DEFKTNAME}}}}).  In release 1.13, the
-\sphinxcode{kiprop/hostname} principal is created automatically for the master
-KDC, but it must still be created for replica KDCs.
+default keytab file ({\hyperref[\detokenize{mitK5defaults:paths}]{\sphinxcrossref{\DUrole{std,std-ref}{DEFKTNAME}}}}).  The \sphinxcode{kiprop/hostname} principal may
+have been created automatically for the primary KDC, but it must
+always be created for replica KDCs.
 
-On the master KDC side, the \sphinxcode{kiprop/hostname} principal must be
+On the primary KDC side, the \sphinxcode{kiprop/hostname} principal must be
 listed in the kadmind ACL file {\hyperref[\detokenize{admin/conf_files/kadm5_acl:kadm5-acl-5}]{\sphinxcrossref{\DUrole{std,std-ref}{kadm5.acl}}}}, and given the
 \sphinxstylestrong{p} privilege (see {\hyperref[\detokenize{admin/database:privileges}]{\sphinxcrossref{\DUrole{std,std-ref}{Privileges}}}}).
 
 On the replica KDC side, {\hyperref[\detokenize{admin/admin_commands/kpropd:kpropd-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kpropd}}}} should be run.  When
 incremental propagation is enabled, it will connect to the kadmind on
-the master KDC and start requesting updates.
+the primary KDC and start requesting updates.
 
 The normal kprop mechanism is disabled by the incremental propagation
 support.  However, if the replica has been unable to fetch changes
-from the master KDC for too long (network problems, perhaps), the log
-on the master may wrap around and overwrite some of the updates that
+from the primary KDC for too long (network problems, perhaps), the log
+on the primary may wrap around and overwrite some of the updates that
 the replica has not yet retrieved.  In this case, the replica will
-instruct the master KDC to dump the current database out to a file and
-invoke a one-time kprop propagation, with special options to also
+instruct the primary KDC to dump the current database out to a file
+and invoke a one-time kprop propagation, with special options to also
 convey the point in the update log at which the replica should resume
 fetching incremental updates.  Thus, all the keytab and ACL setup
 previously described for kprop propagation is still needed.
 
 If an environment has a large number of replicas, it may be desirable
-to arrange them in a hierarchy instead of having the master serve
+to arrange them in a hierarchy instead of having the primary serve
 updates to every replica.  To do this, run \sphinxcode{kadmind -proponly} on
 each intermediate replica, and \sphinxcode{kpropd -A upstreamhostname} on
 downstream replicas to direct each one to the appropriate upstream
@@ -5919,7 +5937,7 @@ There are several known restrictions in the current implementation:
 \begin{itemize}
 \item {} 
 The incremental update protocol does not transport changes to policy
-objects.  Any policy changes on the master will result in full
+objects.  Any policy changes on the primary will result in full
 resyncs to all replicas.
 
 \item {} 
@@ -5927,7 +5945,7 @@ The replica’s KDB module must support locking; it cannot be using the
 LDAP KDB module.
 
 \item {} 
-The master and replica must be able to initiate TCP connections in
+The primary and replica must be able to initiate TCP connections in
 both directions, without an intervening NAT.
 
 \end{itemize}
@@ -5949,7 +5967,7 @@ service.  In the Sun implementation, the service is registered with
 rpcbind (also known as portmapper) and the client looks up the port
 number to contact.  In the MIT implementation, where interaction with
 some modern versions of rpcbind doesn’t always work well, the port
-number must be specified in the config file on both the master and
+number must be specified in the config file on both the primary and
 replica sides.
 
 The Sun implementation hard-codes pathnames in \sphinxcode{/var/krb5} for the
@@ -6256,11 +6274,11 @@ traditional {\hyperref[\detokenize{admin/admin_commands/kprop:kprop-8}]{\sphinxc
 this, the number of attempts an attacker can make within a time period
 is multiplied by the number of KDCs.  For instance, if the
 \sphinxstylestrong{maxfailure} parameter on a policy is 10 and there are four KDCs in
-the environment (a master and three replicas), an attacker could make
+the environment (a primary and three replicas), an attacker could make
 as many as 40 attempts before the principal is locked out on all four
 KDCs.
 
-An administrative unlock is propagated from the master to the replica
+An administrative unlock is propagated from the primary to the replica
 KDCs during the next propagation.  Propagation of an administrative
 unlock will cause the counter of failed attempts on each replica to
 reset to 1 on the next failure.
@@ -6536,6 +6554,8 @@ An entry for each of the principal’s unique encryption types is added,
 ignoring multiple keys with the same encryption type but different
 salt types.
 
+Alias: \sphinxstylestrong{xst}
+
 Example:
 
 \fvset{hllines={, ,}}%
@@ -6593,6 +6613,8 @@ used.
 Display less verbose information.
 
 \end{description}
+
+Alias: \sphinxstylestrong{ktrem}
 
 Example:
 
@@ -6663,14 +6685,12 @@ variable in {\hyperref[\detokenize{admin/conf_files/krb5_conf:libdefaults}]{\sph
 \section{Getting DNS information correct}
 \label{\detokenize{admin/appl_servers:getting-dns-information-correct}}
 Several aspects of Kerberos rely on name service.  When a hostname is
-used to name a service, the Kerberos library canonicalizes the
-hostname using forward and reverse name resolution.  (The reverse name
-resolution step can be turned off using the \sphinxstylestrong{rdns} variable in
-{\hyperref[\detokenize{admin/conf_files/krb5_conf:libdefaults}]{\sphinxcrossref{\DUrole{std,std-ref}{{[}libdefaults{]}}}}}.)  The result of this canonicalization must match
-the principal entry in the host’s keytab, or authentication will fail.
-
-Each host’s canonical name must be the fully-qualified host name
-(including the domain), and each host’s IP address must
+used to name a service, clients may canonicalize the hostname using
+forward and possibly reverse name resolution.  The result of this
+canonicalization must match the principal entry in the host’s keytab,
+or authentication will fail.  To work with all client canonicalization
+configurations, each host’s canonical name must be the fully-qualified
+host name (including the domain), and each host’s IP address must
 reverse-resolve to the canonical name.
 
 Configuration of hostnames varies by operating system.  On the
@@ -7012,16 +7032,16 @@ As with any file, it is possible that your Kerberos database could
 become corrupted.  If this happens on one of the replica KDCs, you
 might never notice, since the next automatic propagation of the
 database would install a fresh copy.  However, if it happens to the
-master KDC, the corrupted database would be propagated to all of the
+primary KDC, the corrupted database would be propagated to all of the
 replicas during the next propagation.  For this reason, MIT recommends
-that you back up your Kerberos database regularly.  Because the master
+that you back up your Kerberos database regularly.  Because the primary
 KDC is continuously dumping the database to a file in order to
 propagate it to the replica KDCs, it is a simple matter to have a cron
 job periodically copy the dump file to a secure machine elsewhere on
 your network.  (Of course, it is important to make the host where
 these backups are stored as secure as your KDCs, and to encrypt its
 transmission across your network.)  Then if your database becomes
-corrupted, you can load the most recent dump onto the master KDC.
+corrupted, you can load the most recent dump onto the primary KDC.
 (See {\hyperref[\detokenize{admin/database:restore-from-dump}]{\sphinxcrossref{\DUrole{std,std-ref}{Restoring a Kerberos database from a dump file}}}}.)
 
 
@@ -7724,30 +7744,34 @@ based on rotating \sphinxcode{CNAME} records in DNS.
 
 \section{Service principal canonicalization}
 \label{\detokenize{admin/princ_dns:service-principal-canonicalization}}
-MIT Kerberos clients currently always do forward resolution (looking
-up the IPv4 and possibly IPv6 addresses using \sphinxcode{getaddrinfo()}) of
-the hostname part of a host-based service principal to canonicalize
-the hostname.  They obtain the “canonical” name of the host when doing
-so.  By default, MIT Kerberos clients will also then do reverse DNS
-resolution (looking up the hostname associated with the IPv4 or IPv6
-address using \sphinxcode{getnameinfo()}) of the hostname.  Using the
-{\hyperref[\detokenize{admin/conf_files/krb5_conf:krb5-conf-5}]{\sphinxcrossref{\DUrole{std,std-ref}{krb5.conf}}}} setting:
+In the MIT krb5 client library, canonicalization of host-based service
+principals is controlled by the \sphinxstylestrong{dns\_canonicalize\_hostname},
+\sphinxstylestrong{rnds}, and \sphinxstylestrong{qualify\_shortname} variables in {\hyperref[\detokenize{admin/conf_files/krb5_conf:libdefaults}]{\sphinxcrossref{\DUrole{std,std-ref}{{[}libdefaults{]}}}}}.
 
-\fvset{hllines={, ,}}%
-\begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{p}{[}\PYG{n}{libdefaults}\PYG{p}{]}
-    \PYG{n}{rdns} \PYG{o}{=} \PYG{n}{false}
-\end{sphinxVerbatim}
+If \sphinxstylestrong{dns\_canonicalize\_hostname} is set to \sphinxcode{true} (the default
+value), the client performs forward resolution by looking up the IPv4
+and/or IPv6 addresses of the hostname using \sphinxcode{getaddrinfo()}.  This
+process will typically add a domain suffix to the hostname if needed,
+and follow CNAME records in the DNS.  If \sphinxstylestrong{rdns} is also set to
+\sphinxcode{true} (the default), the client will then perform a reverse lookup
+of the first returned Internet address using \sphinxcode{getnameinfo()},
+finding the name associated with the PTR record.
 
-will disable reverse DNS lookup on clients.  The default setting is
-“true”.
+If \sphinxstylestrong{dns\_canonicalize\_hostname} is set to \sphinxcode{false}, the hostname is
+not canonicalized using DNS.  If the hostname has only one component
+(i.e. it contains no “.” characters), the host’s primary DNS search
+domain will be appended, if there is one.  The \sphinxstylestrong{qualify\_shortname}
+variable can be used to override or disable this suffix.
 
-Operating system bugs may prevent a setting of \sphinxcode{rdns = false} from
-disabling reverse DNS lookup.  Some versions of GNU libc have a bug in
-\sphinxcode{getaddrinfo()} that cause them to look up \sphinxcode{PTR} records even when
-not required.  MIT Kerberos releases krb5-1.10.2 and newer have a
-workaround for this problem, as does the krb5-1.9.x series as of
-release krb5-1.9.4.
+If \sphinxstylestrong{dns\_canonicalize\_hostname} is set to \sphinxcode{fallback} (added in
+release 1.18), the hostname is initially treated according to the
+rules for \sphinxcode{dns\_canonicalize\_hostname=false}.  If a ticket request
+fails because the service principal is unknown, the hostname will be
+canonicalized according to the rules for
+\sphinxcode{dns\_canonicalize\_hostname=true} and the request will be retried.
+
+In all cases, the hostname is converted to lowercase, and any trailing
+dot is removed.
 
 
 \section{Reverse DNS mismatches}
@@ -7895,7 +7919,7 @@ session keys and for ticket and authenticator encryption.  The KDC
 and other programs that access the Kerberos database will ignore
 keys of non-permitted enctypes.  Starting in release 1.18, this
 setting also acts as the default for \sphinxstylestrong{default\_tkt\_enctypes} and
-\sphinxstylestrong{defaut\_tgs\_enctypes}.
+\sphinxstylestrong{default\_tgs\_enctypes}.
 
 \item[{\sphinxstylestrong{default\_tkt\_enctypes}}] \leavevmode
 controls the default set of enctypes that the Kerberos client
@@ -7971,14 +7995,18 @@ weak
 \\
 \hline
 des3-cbc-sha1
-&&
+&
+deprecated
+&
 \textgreater{}=1.1
 &
 none
 \\
 \hline
 arcfour-hmac
-&&
+&
+deprecated
+&
 \textgreater{}=1.3
 &
 \textgreater{}=2000
@@ -8043,6 +8071,64 @@ krb5 releases 1.18 and later do not support single-DES.  krb5 releases
 1.8 and later disable the single-DES enctypes by default.  Microsoft
 Windows releases Windows 7 and later disable single-DES enctypes by
 default.
+
+krb5 releases 1.17 and later flag deprecated encryption types
+(including \sphinxcode{des3-cbc-sha1} and \sphinxcode{arcfour-hmac}) in KDC logs and
+kadmin output.  krb5 release 1.19 issues a warning during initial
+authentication if \sphinxcode{des3-cbc-sha1} is used.  Future releases will
+disable \sphinxcode{des3-cbc-sha1} by default and eventually remove support for
+it.
+
+
+\section{Migrating away from older encryption types}
+\label{\detokenize{admin/enctypes:migrating-away-from-older-encryption-types}}
+Administrator intervention may be required to migrate a realm away
+from legacy encryption types, especially if the realm was created
+using krb5 release 1.2 or earlier.  This migration should be performed
+before upgrading to krb5 versions which disable or remove support for
+legacy encryption types.
+
+If there is a \sphinxstylestrong{supported\_enctypes} setting in {\hyperref[\detokenize{admin/conf_files/kdc_conf:kdc-conf-5}]{\sphinxcrossref{\DUrole{std,std-ref}{kdc.conf}}}} on
+the KDC, make sure that it does not include weak or deprecated
+encryption types.  This will ensure that newly created keys do not use
+those encryption types by default.
+
+Check the \sphinxcode{krbtgt/REALM} principal using the {\hyperref[\detokenize{admin/admin_commands/kadmin_local:kadmin-1}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmin}}}}
+\sphinxstylestrong{getprinc} command.  If it lists a weak or deprecated encryption
+type as the first key, it must be migrated using the procedure in
+{\hyperref[\detokenize{admin/database:changing-krbtgt-key}]{\sphinxcrossref{\DUrole{std,std-ref}{Changing the krbtgt key}}}}.
+
+Check the \sphinxcode{kadmin/history} principal, which should have only one key
+entry.  If it uses a weak or deprecated encryption type, it should be
+upgraded following the notes in {\hyperref[\detokenize{admin/database:updating-history-key}]{\sphinxcrossref{\DUrole{std,std-ref}{Updating the history key}}}}.
+
+Check the other kadmin principals: kadmin/changepw, kadmin/admin, and
+any kadmin/hostname principals that may exist.  These principals can
+be upgraded with \sphinxstylestrong{change\_password -randkey} in kadmin.
+
+Check the \sphinxcode{K/M} entry.  If it uses a weak or deprecated encryption
+type, it should be upgraded following the procedure in
+{\hyperref[\detokenize{admin/database:updating-master-key}]{\sphinxcrossref{\DUrole{std,std-ref}{Updating the master key}}}}.
+
+User and service principals using legacy encryption types can be
+enumerated with the {\hyperref[\detokenize{admin/admin_commands/kdb5_util:kdb5-util-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kdb5\_util}}}} \sphinxstylestrong{tabdump keyinfo} command.
+
+Service principals can be migrated with a keytab rotation on the
+service host, which can be accomplished using the {\hyperref[\detokenize{admin/admin_commands/k5srvutil:k5srvutil-1}]{\sphinxcrossref{\DUrole{std,std-ref}{k5srvutil}}}}
+\sphinxstylestrong{change} and \sphinxstylestrong{delold} commands.  Allow enough time for existing
+tickets to expire between the change and delold operations.
+
+User principals with password-based keys can be migrated with a
+password change.  The realm administrator can set a password
+expiration date using the {\hyperref[\detokenize{admin/admin_commands/kadmin_local:kadmin-1}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmin}}}} \sphinxstylestrong{modify\_principal
+-pwexpire} command to force a password change.
+
+If a legacy encryption type has not yet been disabled by default in
+the version of krb5 running on the KDC, it can be disabled
+administratively with the \sphinxstylestrong{permitted\_enctypes} variable.  For
+example, setting \sphinxstylestrong{permitted\_enctypes} to \sphinxcode{DEFAULT -des3 -rc4} will
+cause any database keys of the triple-DES and RC4 encryption types to
+be ignored.
 
 
 \chapter{HTTPS proxy configuration}
@@ -8206,9 +8292,9 @@ Kerberos principals, password policies, and service key tables
 (keytabs).
 
 The remote kadmin client uses Kerberos to authenticate to kadmind
-using the service principal \sphinxcode{kadmin/ADMINHOST} (where \sphinxstyleemphasis{ADMINHOST} is
-the fully-qualified hostname of the admin server) or \sphinxcode{kadmin/admin}.
-If the credentials cache contains a ticket for one of these
+using the service principal \sphinxcode{kadmin/admin} or \sphinxcode{kadmin/ADMINHOST}
+(where \sphinxstyleemphasis{ADMINHOST} is the fully-qualified hostname of the admin
+server).  If the credentials cache contains a ticket for one of these
 principals, and the \sphinxstylestrong{-c} credentials\_cache option is specified, that
 ticket is used to authenticate to kadmind.  Otherwise, the \sphinxstylestrong{-p} and
 \sphinxstylestrong{-k} options are used to specify the client Kerberos principal name
@@ -8217,7 +8303,7 @@ it requests a service ticket from the KDC, and uses that service
 ticket to authenticate to kadmind.
 
 Since kadmin.local directly accesses the KDC database, it usually must
-be run directly on the master KDC with sufficient permissions to read
+be run directly on the primary KDC with sufficient permissions to read
 the KDC database.  If the KDC database uses the LDAP database module,
 kadmin.local can be run on any host which can access the LDAP server.
 
@@ -8259,10 +8345,10 @@ principal.  As of release 1.8, the MIT Kerberos KDC only supports
 fully anonymous operation.
 
 \item[{\sphinxstylestrong{-c} \sphinxstyleemphasis{credentials\_cache}}] \leavevmode
-Use \sphinxstyleemphasis{credentials\_cache} as the credentials cache.  The
-cache should contain a service ticket for the \sphinxcode{kadmin/ADMINHOST}
-(where \sphinxstyleemphasis{ADMINHOST} is the fully-qualified hostname of the admin
-server) or \sphinxcode{kadmin/admin} service; it can be acquired with the
+Use \sphinxstyleemphasis{credentials\_cache} as the credentials cache.  The cache
+should contain a service ticket for the \sphinxcode{kadmin/admin} or
+\sphinxcode{kadmin/ADMINHOST} (where \sphinxstyleemphasis{ADMINHOST} is the fully-qualified
+hostname of the admin server) service; it can be acquired with the
 \DUrole{xref,std,std-ref}{kinit(1)} program.  If this option is not specified, kadmin
 requests a new service ticket from the KDC, and stores it in its
 own temporary ccache.
@@ -8793,7 +8879,7 @@ expression.
 
 This command requires the \sphinxstylestrong{list} privilege.
 
-Alias: \sphinxstylestrong{listprincs}, \sphinxstylestrong{get\_principals}, \sphinxstylestrong{get\_princs}
+Alias: \sphinxstylestrong{listprincs}, \sphinxstylestrong{get\_principals}, \sphinxstylestrong{getprincs}
 
 Example:
 
@@ -8818,7 +8904,7 @@ Displays string attributes on \sphinxstyleemphasis{principal}.
 
 This command requires the \sphinxstylestrong{inquire} privilege.
 
-Alias: \sphinxstylestrong{getstr}
+Alias: \sphinxstylestrong{getstrs}
 
 \phantomsection\label{\detokenize{admin/admin_commands/kadmin_local:get-strings-end}}
 
@@ -9019,7 +9105,7 @@ tabs.
 
 This command requires the \sphinxstylestrong{inquire} privilege.
 
-Alias: getpol
+Alias: \sphinxstylestrong{getpol}
 
 Examples:
 
@@ -9120,6 +9206,8 @@ An entry for each of the principal’s unique encryption types is added,
 ignoring multiple keys with the same encryption type but different
 salt types.
 
+Alias: \sphinxstylestrong{xst}
+
 Example:
 
 \fvset{hllines={, ,}}%
@@ -9157,6 +9245,8 @@ used.
 Display less verbose information.
 
 \end{description}
+
+Alias: \sphinxstylestrong{ktrem}
 
 Example:
 
@@ -9233,9 +9323,9 @@ variables.
 \subsection{DESCRIPTION}
 \label{\detokenize{admin/admin_commands/kadmind:description}}
 kadmind starts the Kerberos administration server.  kadmind typically
-runs on the master Kerberos server, which stores the KDC database.  If
-the KDC database uses the LDAP module, the administration server and
-the KDC server need not run on the same machine.  kadmind accepts
+runs on the primary Kerberos server, which stores the KDC database.
+If the KDC database uses the LDAP module, the administration server
+and the KDC server need not run on the same machine.  kadmind accepts
 remote requests from programs such as {\hyperref[\detokenize{admin/admin_commands/kadmin_local:kadmin-1}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmin}}}} and
 \DUrole{xref,std,std-ref}{kpasswd(1)} to administer the information in these database.
 
@@ -9265,8 +9355,8 @@ Incremental propagation allows replica KDC servers to receive
 principal and policy updates incrementally instead of receiving full
 dumps of the database.  This facility can be enabled in the
 {\hyperref[\detokenize{admin/conf_files/kdc_conf:kdc-conf-5}]{\sphinxcrossref{\DUrole{std,std-ref}{kdc.conf}}}} file with the \sphinxstylestrong{iprop\_enable} option.  Incremental
-propagation requires the principal \sphinxcode{kiprop/MASTER\textbackslash{}@REALM} (where
-MASTER is the master KDC’s canonical host name, and REALM the realm
+propagation requires the principal \sphinxcode{kiprop/PRIMARY\textbackslash{}@REALM} (where
+PRIMARY is the primary KDC’s canonical host name, and REALM the realm
 name).  In release 1.13, this principal is automatically created and
 registered into the datebase.
 
@@ -10469,7 +10559,7 @@ variables.
 \subsection{DESCRIPTION}
 \label{\detokenize{admin/admin_commands/kprop:description}}
 kprop is used to securely propagate a Kerberos V5 database dump file
-from the master Kerberos server to a replica Kerberos server, which is
+from the primary Kerberos server to a replica Kerberos server, which is
 specified by \sphinxstyleemphasis{replica\_host}.  The dump file must be created by
 {\hyperref[\detokenize{admin/admin_commands/kdb5_util:kdb5-util-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kdb5\_util}}}}.
 
@@ -10477,7 +10567,7 @@ specified by \sphinxstyleemphasis{replica\_host}.  The dump file must be created
 \subsection{OPTIONS}
 \label{\detokenize{admin/admin_commands/kprop:options}}\begin{description}
 \item[{\sphinxstylestrong{-r} \sphinxstyleemphasis{realm}}] \leavevmode
-Specifies the realm of the master server.
+Specifies the realm of the primary server.
 
 \item[{\sphinxstylestrong{-f} \sphinxstyleemphasis{file}}] \leavevmode
 Specifies the filename where the dumped principal database file is
@@ -10523,8 +10613,9 @@ variables.
 {[}\sphinxstylestrong{-p} \sphinxstyleemphasis{kdb5\_util\_prog}{]}
 {[}\sphinxstylestrong{-P} \sphinxstyleemphasis{port}{]}
 {[}\sphinxstylestrong{\textendash{}pid-file}=\sphinxstyleemphasis{pid\_file}{]}
+{[}\sphinxstylestrong{-D}{]}
 {[}\sphinxstylestrong{-d}{]}
-{[}\sphinxstylestrong{-t}{]}
+{[}\sphinxstylestrong{-s} \sphinxstyleemphasis{keytab\_file}{]}
 
 
 \subsection{DESCRIPTION}
@@ -10532,12 +10623,12 @@ variables.
 The \sphinxstyleemphasis{kpropd} command runs on the replica KDC server.  It listens for
 update requests made by the {\hyperref[\detokenize{admin/admin_commands/kprop:kprop-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kprop}}}} program.  If incremental
 propagation is enabled, it periodically requests incremental updates
-from the master KDC.
+from the primary KDC.
 
-When the replica receives a kprop request from the master, kpropd
+When the replica receives a kprop request from the primary, kpropd
 accepts the dumped KDC database and places it in a file, and then runs
 {\hyperref[\detokenize{admin/admin_commands/kdb5_util:kdb5-util-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kdb5\_util}}}} to load the dumped database into the active
-database which is used by {\hyperref[\detokenize{admin/admin_commands/krb5kdc:krb5kdc-8}]{\sphinxcrossref{\DUrole{std,std-ref}{krb5kdc}}}}.  This allows the master
+database which is used by {\hyperref[\detokenize{admin/admin_commands/krb5kdc:krb5kdc-8}]{\sphinxcrossref{\DUrole{std,std-ref}{krb5kdc}}}}.  This allows the primary
 Kerberos server to use {\hyperref[\detokenize{admin/admin_commands/kprop:kprop-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kprop}}}} to propagate its database to
 the replica servers.  Upon a successful download of the KDC database
 file, the replica Kerberos server will have an up-to-date KDC
@@ -10563,10 +10654,10 @@ compatibility but does nothing.
 
 Incremental propagation may be enabled with the \sphinxstylestrong{iprop\_enable}
 variable in {\hyperref[\detokenize{admin/conf_files/kdc_conf:kdc-conf-5}]{\sphinxcrossref{\DUrole{std,std-ref}{kdc.conf}}}}.  If incremental propagation is
-enabled, the replica periodically polls the master KDC for updates, at
+enabled, the replica periodically polls the primary KDC for updates, at
 an interval determined by the \sphinxstylestrong{iprop\_replica\_poll} variable.  If the
 replica receives updates, kpropd updates its log file with any updates
-from the master.  {\hyperref[\detokenize{admin/admin_commands/kproplog:kproplog-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kproplog}}}} can be used to view a summary of
+from the primary.  {\hyperref[\detokenize{admin/admin_commands/kproplog:kproplog-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kproplog}}}} can be used to view a summary of
 the update entry log on the replica KDC.  If incremental propagation
 is enabled, the principal \sphinxcode{kiprop/replicahostname@REALM} (where
 \sphinxstyleemphasis{replicahostname} is the name of the replica KDC host, and \sphinxstyleemphasis{REALM} is
@@ -10580,31 +10671,32 @@ enabled.
 \subsection{OPTIONS}
 \label{\detokenize{admin/admin_commands/kpropd:options}}\begin{description}
 \item[{\sphinxstylestrong{-r} \sphinxstyleemphasis{realm}}] \leavevmode
-Specifies the realm of the master server.
+Specifies the realm of the primary server.
 
 \item[{\sphinxstylestrong{-A} \sphinxstyleemphasis{admin\_server}}] \leavevmode
 Specifies the server to be contacted for incremental updates; by
-default, the master admin server is contacted.
+default, the primary admin server is contacted.
 
 \item[{\sphinxstylestrong{-f} \sphinxstyleemphasis{file}}] \leavevmode
 Specifies the filename where the dumped principal database file is
 to be stored; by default the dumped database file is {\hyperref[\detokenize{mitK5defaults:paths}]{\sphinxcrossref{\DUrole{std,std-ref}{LOCALSTATEDIR}}}}\sphinxcode{/krb5kdc}\sphinxcode{/from\_master}.
 
+\item[{\sphinxstylestrong{-F} \sphinxstyleemphasis{kerberos\_db}}] \leavevmode
+Path to the Kerberos database file, if not the default.
+
 \item[{\sphinxstylestrong{-p}}] \leavevmode
 Allows the user to specify the pathname to the {\hyperref[\detokenize{admin/admin_commands/kdb5_util:kdb5-util-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kdb5\_util}}}}
 program; by default the pathname used is {\hyperref[\detokenize{mitK5defaults:paths}]{\sphinxcrossref{\DUrole{std,std-ref}{SBINDIR}}}}\sphinxcode{/kdb5\_util}.
 
-\item[{\sphinxstylestrong{-d}}] \leavevmode
-Turn on debug mode.  In this mode, kpropd will not detach
-itself from the current job and run in the background.  Instead,
-it will run in the foreground and print out debugging messages
-during the database propagation.
+\item[{\sphinxstylestrong{-D}}] \leavevmode
+In this mode, kpropd will not detach itself from the current job
+and run in the background.  Instead, it will run in the
+foreground.
 
-\item[{\sphinxstylestrong{-t}}] \leavevmode
-In standalone mode without incremental propagation, exit after one
-dump file is received.  In incremental propagation mode, exit as
-soon as the database is up to date, or if the master returns an
-error.
+\item[{\sphinxstylestrong{-d}}] \leavevmode
+Turn on debug mode.  kpropd will print out debugging messages
+during the database propogation and will run in the foreground
+(implies \sphinxstylestrong{-D}).
 
 \item[{\sphinxstylestrong{-P}}] \leavevmode
 Allow for an alternate port number for kpropd to listen on.  This
@@ -10618,20 +10710,13 @@ default the path used is {\hyperref[\detokenize{mitK5defaults:paths}]{\sphinxcro
 In standalone mode, write the process ID of the daemon into
 \sphinxstyleemphasis{pid\_file}.
 
+\item[{\sphinxstylestrong{-s} \sphinxstyleemphasis{keytab\_file}}] \leavevmode
+Path to a keytab to use for acquiring acceptor credentials.
+
+\item[{\sphinxstylestrong{-x} \sphinxstyleemphasis{db\_args}}] \leavevmode
+Database-specific arguments.  See {\hyperref[\detokenize{admin/admin_commands/kadmin_local:dboptions}]{\sphinxcrossref{\DUrole{std,std-ref}{Database Options}}}} in {\hyperref[\detokenize{admin/admin_commands/kadmin_local:kadmin-1}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmin}}}} for supported arguments.
+
 \end{description}
-
-
-\subsection{ENVIRONMENT}
-\label{\detokenize{admin/admin_commands/kpropd:environment}}
-kpropd uses the following environment variables:
-\begin{itemize}
-\item {} 
-\sphinxstylestrong{KRB5\_CONFIG}
-
-\item {} 
-\sphinxstylestrong{KRB5\_KDC\_PROFILE}
-
-\end{itemize}
 
 
 \subsection{FILES}
@@ -10646,7 +10731,7 @@ will allow Kerberos database propagation via {\hyperref[\detokenize{admin/admin_
 
 
 \subsection{ENVIRONMENT}
-\label{\detokenize{admin/admin_commands/kpropd:id1}}
+\label{\detokenize{admin/admin_commands/kpropd:environment}}
 See \DUrole{xref,std,std-ref}{kerberos(7)} for a description of Kerberos environment
 variables.
 
@@ -10671,18 +10756,18 @@ variables.
 The kproplog command displays the contents of the KDC database update
 log to standard output.  It can be used to keep track of incremental
 updates to the principal database.  The update log file contains the
-update log maintained by the {\hyperref[\detokenize{admin/admin_commands/kadmind:kadmind-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmind}}}} process on the master
+update log maintained by the {\hyperref[\detokenize{admin/admin_commands/kadmind:kadmind-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kadmind}}}} process on the primary
 KDC server and the {\hyperref[\detokenize{admin/admin_commands/kpropd:kpropd-8}]{\sphinxcrossref{\DUrole{std,std-ref}{kpropd}}}} process on the replica KDC
 servers.  When updates occur, they are logged to this file.
 Subsequently any KDC replica configured for incremental updates will
-request the current data from the master KDC and update their log file
-with any updates returned.
+request the current data from the primary KDC and update their log
+file with any updates returned.
 
 The kproplog command requires read access to the update log file.  It
 will display update entries only for the KDC it runs on.
 
 If no options are specified, kproplog displays a summary of the update
-log.  If invoked on the master, kproplog also displays all of the
+log.  If invoked on the primary, kproplog also displays all of the
 update entries.  If invoked on a replica KDC server, kproplog displays
 only a summary of the updates, which includes the serial number of the
 last update received and the associated time stamp of the last update.
@@ -10693,7 +10778,8 @@ last update received and the associated time stamp of the last update.
 \item[{\sphinxstylestrong{-R}}] \leavevmode
 Reset the update log.  This forces full resynchronization.  If
 used on a replica then that replica will request a full resync.
-If used on the master then all replicas will request full resyncs.
+If used on the primary then all replicas will request full
+resyncs.
 
 \item[{\sphinxstylestrong{-h}}] \leavevmode
 Display a summary of the update log.  This information includes
@@ -10762,10 +10848,12 @@ V4 srvtab files are no longer supported.)
 \subsubsection{list}
 \label{\detokenize{admin/admin_commands/ktutil:list}}\begin{quote}
 
-\sphinxstylestrong{list}
+\sphinxstylestrong{list} {[}\sphinxstylestrong{-t}{]} {[}\sphinxstylestrong{-k}{]} {[}\sphinxstylestrong{-e}{]}
 \end{quote}
 
-Displays the current keylist.
+Displays the current keylist.  If \sphinxstylestrong{-t}, \sphinxstylestrong{-k}, and/or \sphinxstylestrong{-e} are
+specified, also display the timestamp, key contents, or enctype
+(respectively).
 
 Alias: \sphinxstylestrong{l}
 
@@ -11475,7 +11563,7 @@ properly on the client if the principal entry has no long-term keys.
 \subsubsection{kprop: No route to host while connecting to server}
 \label{\detokenize{admin/troubleshoot:kprop-no-route}}\label{\detokenize{admin/troubleshoot:kprop-no-route-to-host-while-connecting-to-server}}
 Make sure that the hostname of the replica KDC (as given to kprop) is
-correct, and that any firewalls between the master and the replica
+correct, and that any firewalls between the primary and the replica
 allow a connection on port 754.
 
 
@@ -11493,10 +11581,10 @@ mode, make sure that it is running.
 Make sure that:
 \begin{enumerate}
 \item {} 
-The time is synchronized between the master and replica KDCs.
+The time is synchronized between the primary and replica KDCs.
 
 \item {} 
-The master stash file was copied from the master to the expected
+The master stash file was copied from the primary to the expected
 location on the replica.
 
 \item {} 
@@ -11659,7 +11747,7 @@ existing tickets will still function until their scheduled expiry
 
 \begin{sphinxadmonition}{note}{Note:}
 The new \sphinxcode{krbtgt@REALM} key should be propagated to replica KDCs
-immediately so that TGTs issued by the master KDC can be used to
+immediately so that TGTs issued by the primary KDC can be used to
 issue service tickets on replica KDCs.  Replica KDCs will refuse
 requests using the new TGT kvno until the new krbtgt entry has
 been propagated to them.
@@ -11853,7 +11941,7 @@ The following KDC configuration will not generate DES keys by default:
 \begin{sphinxadmonition}{note}{Note:}
 As before, the KDC process must be restarted for this change to take
 effect.  It is best practice to update kdc.conf on all KDCs, not just the
-master, to avoid unpleasant surprises should the master fail and a
+primary, to avoid unpleasant surprises should the primary fail and a
 replica need to be promoted.
 \end{sphinxadmonition}
 

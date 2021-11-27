@@ -361,7 +361,7 @@ krb5_mcc_start_seq_get(krb5_context context, krb5_ccache id,
  * cursor is a krb5_cc_cursor originally obtained from
  * krb5_mcc_start_seq_get.
  *
- * Modifes:
+ * Modifies:
  * cursor, creds
  *
  * Effects:
@@ -575,12 +575,17 @@ krb5_mcc_get_name (krb5_context context, krb5_ccache id)
 krb5_error_code KRB5_CALLCONV
 krb5_mcc_get_principal(krb5_context context, krb5_ccache id, krb5_principal *princ)
 {
-    krb5_mcc_data *ptr = (krb5_mcc_data *)id->data;
-    if (!ptr->prin) {
-        *princ = 0L;
-        return KRB5_FCC_NOFILE;
-    }
-    return krb5_copy_principal(context, ptr->prin, princ);
+    krb5_error_code ret;
+    krb5_mcc_data *d = id->data;
+
+    *princ = NULL;
+    k5_cc_mutex_lock(context, &d->lock);
+    if (d->prin == NULL)
+        ret = KRB5_FCC_NOFILE;
+    else
+        ret = krb5_copy_principal(context, d->prin, princ);
+    k5_cc_mutex_unlock(context, &d->lock);
+    return ret;
 }
 
 krb5_error_code KRB5_CALLCONV

@@ -2,7 +2,7 @@ K5_AC_INIT([aclocal.m4])
 
 # If $runstatedir isn't set by autoconf (<2.70), set it manually.
 if test x"$runstatedir" = x; then
-  runstatedir=$localstatedir/run
+  runstatedir='${localstatedir}/run'
 fi
 AC_SUBST(runstatedir)
 
@@ -759,6 +759,7 @@ AC_CACHE_CHECK([for in6addr_any definition in library],
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <stdio.h>
 ],[
   struct sockaddr_in6 in;
   in.sin6_addr = in6addr_any;
@@ -1098,8 +1099,6 @@ extern void endrpcent();],
 AC_MSG_RESULT($k5_cv_type_endrpcent)
 AC_DEFINE_UNQUOTED(ENDRPCENT_TYPE, $k5_cv_type_endrpcent, [Define as return type of endrpcent])
 K5_GEN_FILE(include/gssrpc/types.h:include/gssrpc/types.hin)
-PASS=tcp
-AC_SUBST(PASS)
 
 # for pkinit
 AC_ARG_ENABLE([pkinit],
@@ -1535,7 +1534,6 @@ V5_AC_OUTPUT_MAKEFILE(.
 	appl/simple appl/simple/client appl/simple/server
 	appl/gss-sample appl/user_user
 
-	tests tests/resolve tests/asn.1 tests/create tests/hammer
-	tests/verify tests/gssapi tests/dejagnu tests/threads tests/shlib
-	tests/gss-threads tests/misc
+	tests tests/asn.1 tests/create tests/hammer tests/verify tests/gssapi
+	tests/dejagnu tests/threads tests/shlib tests/gss-threads tests/misc
 )

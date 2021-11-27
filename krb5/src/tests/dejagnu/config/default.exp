@@ -303,7 +303,6 @@ foreach i {
     {KTUTIL $objdir/../../kadmin/ktutil/ktutil}
     {KLIST $objdir/../../clients/klist/klist}
     {KDESTROY $objdir/../../clients/kdestroy/kdestroy}
-    {RESOLVE $objdir/../resolve/resolve}
     {T_INETD $objdir/t_inetd}
     {KPROPLOG $objdir/../../kprop/kproplog}
     {KPASSWD $objdir/../../clients/kpasswd/kpasswd}
@@ -497,7 +496,6 @@ proc setup_runtime_env { } {
 # 0 on failure.
 
 proc get_hostname { } {
-    global RESOLVE
     global hostname
     global tmppwd
 
@@ -507,7 +505,7 @@ proc get_hostname { } {
 
     envstack_push
     setup_runtime_env
-    catch "exec $RESOLVE -q >$tmppwd/hostname" exec_output
+    catch "exec hostname >$tmppwd/hostname" exec_output
     envstack_pop
     if ![string match "" $exec_output] {
 	verbose -log $exec_output
@@ -745,6 +743,8 @@ proc setup_krb5_conf { {type client} } {
 	puts $conffile "\[libdefaults\]"
 	puts $conffile "	default_realm = $REALMNAME"
 	puts $conffile "	dns_lookup_kdc = false"
+	puts $conffile "        dns_canonicalize_hostname = fallback"
+	puts $conffile "	qualify_shortname = \"\""
 	if [info exists allow_weak_crypto($type)] {
 	    puts $conffile "	allow_weak_crypto = $allow_weak_crypto($type)"
 	} else {
@@ -1764,7 +1764,7 @@ proc kinit { name pass standalone } {
     # Use kinit to get a ticket.
 	#
 	# For now always get forwardable tickets. Later when we need to make
-	# tests that distiguish between forwardable tickets and otherwise
+	# tests that distinguish between forwardable tickets and otherwise
 	# we should but another option to this proc. --proven
 	#
     spawn $KINIT -5 -f $name@$REALMNAME
@@ -1899,7 +1899,7 @@ proc kinit_kt { name keytab standalone testname } {
     # Use kinit to get a ticket.
 	#
 	# For now always get forwardable tickets. Later when we need to make
-	# tests that distiguish between forwardable tickets and otherwise
+	# tests that distinguish between forwardable tickets and otherwise
 	# we should but another option to this proc. --proven
 	#
     spawn $KINIT -5 -f -k -t $keytab $name@$REALMNAME

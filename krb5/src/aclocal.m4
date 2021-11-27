@@ -13,11 +13,7 @@ fi
 ac_topdir=$srcdir/$ac_reltopdir
 ac_config_fragdir=$ac_reltopdir/config
 # echo "Looking for $srcdir/$ac_config_fragdir"
-if test -d "$srcdir/$ac_config_fragdir"; then
-  AC_CONFIG_AUX_DIR(K5_TOPDIR/config)
-else
-  AC_MSG_ERROR([can not find config/ directory in $ac_reltopdir])
-fi
+AC_CONFIG_AUX_DIR(K5_TOPDIR/config)
 ])dnl
 dnl
 dnl Version info.
@@ -833,7 +829,7 @@ if test -n "$tcl_conf" ; then
       done
       LIBS="$old_LIBS `eval echo x $TCL_LIB_SPEC $TCL_LIBS | sed 's/^x//'`"
       LDFLAGS="$old_LDFLAGS $TCL_LD_FLAGS"
-      AC_TRY_LINK( , [Tcl_CreateInterp ();],
+      AC_TRY_LINK([#include <tcl.h>], [Tcl_CreateInterp ();],
 	tcl_ok_conf=$file
 	tcl_vers_maj=$TCL_MAJOR_VERSION
 	tcl_vers_min=$TCL_MINOR_VERSION
@@ -1429,7 +1425,14 @@ else
   COM_ERR_VERSION=k5
   AC_MSG_RESULT(krb5)
 fi
+OLDLIBS="$LIBS"
+COM_ERR_LIB=-lcom_err
 if test $COM_ERR_VERSION = sys; then
+  PKG_CHECK_MODULES(COM_ERR, com_err, [have_com_err=yes], [have_com_err=no])
+  if test "x$have_com_err = xyes"; then
+    COM_ERR_LIB="$COM_ERR_LIBS"
+  fi
+  LIBS="$LIBS $COM_ERR_LIB"
   # check for various functions we need
   AC_CHECK_LIB(com_err, add_error_table, :, AC_MSG_ERROR(cannot find add_error_table in com_err library))
   AC_CHECK_LIB(com_err, remove_error_table, :, AC_MSG_ERROR(cannot find remove_error_table in com_err library))
@@ -1470,6 +1473,8 @@ EOF
   rm -f conf$$e.et
 fi
 AC_SUBST(COM_ERR_VERSION)
+AC_SUBST(COM_ERR_LIB)
+LIBS="$OLDLIBS"
 if test "$COM_ERR_VERSION" = k5 -o "$COM_ERR_VERSION" = intlsys; then
   AC_DEFINE(HAVE_COM_ERR_INTL,1,
             [Define if com_err has compatible gettext support])
@@ -1601,8 +1606,9 @@ if test -r conftest.1 && test -r conftest.2 ; then true ; else
 fi
 a=no
 b=no
-# blindly assume we have 'unlink'...
-AC_TRY_RUN([void foo1() __attribute__((constructor));
+# blindly assume we have 'unlink' and unistd.h.
+AC_TRY_RUN([#include <unistd.h>
+void foo1() __attribute__((constructor));
 void foo1() { unlink("conftest.1"); }
 void foo2() __attribute__((destructor));
 void foo2() { unlink("conftest.2"); }

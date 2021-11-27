@@ -703,7 +703,7 @@ const krb5_kt_ops krb5_kt_dfl_ops = {
  * There are no separators between fields of an entry.
  * A principal is a length-encoded array of length-encoded strings.  The
  * length is a krb5_int16 in each case.  The specific format, then, is
- * multiple entries concatinated with no separators.  An entry has this
+ * multiple entries concatenated with no separators.  An entry has this
  * exact format:
  *
  * sizeof(krb5_int16) bytes for number of components in the principal;
@@ -921,6 +921,8 @@ krb5_ktfileint_internal_read_entry(krb5_context context, krb5_keytab id, krb5_ke
             size = ntohl(size);
 
         if (size < 0) {
+            if (size == INT32_MIN)  /* INT32_MIN inverts to itself. */
+                return KRB5_KT_FORMAT;
             if (fseek(KTFILEP(id), -size, SEEK_CUR)) {
                 return errno;
             }
@@ -1299,7 +1301,7 @@ krb5_ktfileint_size_entry(krb5_context context, krb5_keytab_entry *entry, krb5_i
  * Find and reserve a slot in the file for an entry of the needed size.
  * The commit point will be set to the position in the file where the
  * the length (sizeof(krb5_int32) bytes) of this node should be written
- * when commiting the write.  The file position left as a result of this
+ * when committing the write.  The file position left as a result of this
  * call is the position where the actual data should be written.
  *
  * The size_needed argument may be adjusted if we find a hole that is
@@ -1347,6 +1349,8 @@ krb5_ktfileint_find_slot(krb5_context context, krb5_keytab id, krb5_int32 *size_
                 return errno;
         } else if (size < 0) {
             /* Empty record; use if it's big enough, seek past otherwise. */
+            if (size == INT32_MIN)  /* INT32_MIN inverts to itself. */
+                return KRB5_KT_FORMAT;
             size = -size;
             if (size >= *size_needed) {
                 *size_needed = size;

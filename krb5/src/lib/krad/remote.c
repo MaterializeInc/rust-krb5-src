@@ -152,7 +152,7 @@ remote_disconnect(krad_remote *rr)
 }
 
 /* Add the specified flags to the remote. This automatically manages the
- * lifecyle of the underlying event. Also connects if disconnected. */
+ * lifecycle of the underlying event. Also connects if disconnected. */
 static krb5_error_code
 remote_add_flags(krad_remote *remote, verto_ev_flag flags)
 {
@@ -198,7 +198,7 @@ remote_add_flags(krad_remote *remote, verto_ev_flag flags)
 }
 
 /* Remove the specified flags to the remote. This automatically manages the
- * lifecyle of the underlying event. */
+ * lifecycle of the underlying event. */
 static void
 remote_del_flags(krad_remote *remote, verto_ev_flag flags)
 {
@@ -220,12 +220,12 @@ static void
 remote_shutdown(krad_remote *rr)
 {
     krb5_error_code retval;
-    request *r;
+    request *r, *next;
 
     remote_disconnect(rr);
 
     /* Start timers for all unsent packets. */
-    K5_TAILQ_FOREACH(r, &rr->list, list) {
+    K5_TAILQ_FOREACH_SAFE(r, &rr->list, list, next) {
         if (r->timer == NULL) {
             retval = request_start_timer(r, rr->vctx);
             if (retval != 0)
@@ -234,7 +234,7 @@ remote_shutdown(krad_remote *rr)
     }
 }
 
-/* Handle when packets receive no response within their alloted time. */
+/* Handle when packets receive no response within their allotted time. */
 static void
 on_timeout(verto_ctx *ctx, verto_ev *ev)
 {
