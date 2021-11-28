@@ -19,7 +19,7 @@
 //! custom build scripts. It is not intended for direct consumption, but as a
 //! dependency for other crates that need libkrb5 available, like [sasl2-sys].
 //!
-//! krb5-src is currently bundling libkrb5 [v1.18.2].
+//! krb5-src is currently bundling libkrb5 [v1.19.2].
 //!
 //! To use this crate, declare a `dependency` or `dev-dependency` on `krb5-src`.
 //! Then, in the build script for your crate, the environment variable
@@ -63,5 +63,5 @@
 //!   crate.
 //!
 //! [libkrb5]: https://web.mit.edu/kerberos/
-//! [v1.18.2]: https://web.mit.edu/kerberos/krb5-1.18/
+//! [v1.19.2]: https://web.mit.edu/kerberos/krb5-1.19/
 //! [sasl2-sys]: https://github.com/MaterializeInc/rust-sasl
