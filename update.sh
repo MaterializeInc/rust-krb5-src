@@ -24,3 +24,4 @@ mkdir -p krb5
 tar --strip-components=1 -C krb5 -xf krb5.tar.gz
 rm krb5.tar.gz krb5.tar.gz.asc
 (cd krb5/src && autoreconf -vif)
+rm -r krb5/doc krb5/src/autom4te.cache
