@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to [Semantic
 Versioning].
 
+## [0.3.1+1.19.2] - 2021-12-22
+
+* Incorporate a patch to remove an errant linker flag that was breaking
+  cross-compilation from macOS to Linux. See [krb5/krb5#1233] for details.
+
 ## [0.3.0+1.19.2] - 2021-11-28
 
 * Upgrade to libkrb5 v1.19.2.
@@ -62,7 +67,8 @@ Initial release.
 [0.2.3+1.18.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.2+1.18.1...v0.2.3+1.18.2
 [0.2.4+1.18.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.3+1.18.2...v0.2.4+1.18.2
 [0.3.0+1.19.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.4+1.18.2...v0.3.0+1.19.2
+[0.3.1+1.19.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.0+1.19.2...v0.3.1+1.19.2
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[crates-io-page]: https://crates.io/crates/krb5-src
+[krb5/krb5#1233]: https://github.com/krb5/krb5/pull/1233
