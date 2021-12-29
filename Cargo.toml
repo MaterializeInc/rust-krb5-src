@@ -15,7 +15,7 @@ edition = "2018"
 links = "krb5-src"
 
 [dependencies]
-openssl-sys = "0.9.55"
+openssl-sys = { version = "0.9.55", optional = true }
 
 [build-dependencies]
 duct = "0.13.3"

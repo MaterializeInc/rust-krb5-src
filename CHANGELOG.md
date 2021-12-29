@@ -11,6 +11,9 @@ Versioning].
 
 * Support building on Windows (#16).
 
+* Make the `openssl-sys` dependency optional unless the `openssl-vendored`
+  feature is enabled.
+
 ## [0.3.1+1.19.2] - 2021-12-22
 
 * Incorporate a patch to remove an errant linker flag that was breaking
