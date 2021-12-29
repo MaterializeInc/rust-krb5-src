@@ -46,7 +46,7 @@
 //! println!("cargo:rustc-link-lib=static=krb5support");
 //! ```
 //!
-//! ## Cargo features
+//! # Cargo features
 //!
 //! krb5-src can be configured with the following Cargo features:
 //!
@@ -61,6 +61,13 @@
 //!
 //! * **`openssl-vendored`** enables the `vendored` feature of the `openssl-sys`
 //!   crate.
+//!
+//! Note that none of these features have any effect when compiling on Windows.
+//!
+//! # Platform support
+//!
+//! krb5-src is tested on recent versions of Ubuntu, macOS, and Windows. Patches
+//! that improve support for other platforms are welcome.
 //!
 //! [libkrb5]: https://web.mit.edu/kerberos/
 //! [v1.19.2]: https://web.mit.edu/kerberos/krb5-1.19/

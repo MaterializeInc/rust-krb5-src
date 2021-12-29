@@ -1,5 +1,8 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches: [master]
+  pull_request:
 
 jobs:
   test:
@@ -8,13 +11,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build:
-        - ubuntu
-        - ubuntu-old
-        - ubuntu-binaries
-        - ubuntu-openssl-vendored
-        - macos
-        - macos-openssl-vendored
         include:
           - build: ubuntu
             os: ubuntu-latest
@@ -44,6 +40,25 @@ jobs:
     - name: Install Rust (rustup)
       run: rustup update ${{ matrix.rust }} --no-self-update && rustup default ${{ matrix.rust }}
     - run: cargo test --no-default-features --features=${{ matrix.features }}
+
+  test-windows:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - build: windows
+            os: windows-latest
+            rust: stable
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Rust (rustup)
+      run: rustup update ${{ matrix.rust }} --no-self-update && rustup default ${{ matrix.rust }}
+    - shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        set PATH=%PATH%;%wix%bin;"%WindowsSdkVerBinPath%"\x86
+        cargo test --no-default-features --features=${{ matrix.features }}
 
   lint:
     name: lint

@@ -14,20 +14,40 @@
 // limitations under the License.
 
 use std::env;
+#[cfg(unix)]
 use std::ffi::OsString;
 use std::fs;
-use std::path::{Path, PathBuf};
+#[cfg(unix)]
+use std::path::Path;
+use std::path::PathBuf;
 
 use duct::cmd;
 
-fn main() {
-    let host = env::var("HOST").unwrap();
-    let target = env::var("TARGET").unwrap();
-    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let build_dir = out_dir.join("build");
-    let install_dir = out_dir.join("install");
-    fs::create_dir_all(&build_dir).expect("failed to create build dir");
+struct Metadata {
+    host: String,
+    target: String,
+    build_dir: PathBuf,
+    install_dir: PathBuf,
+}
 
+fn main() {
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let metadata = Metadata {
+        host: env::var("HOST").unwrap(),
+        target: env::var("TARGET").unwrap(),
+        build_dir: out_dir.join("build"),
+        install_dir: out_dir.join("install"),
+    };
+
+    fs::create_dir_all(&metadata.build_dir).expect("failed to create build dir");
+    fs::create_dir_all(&metadata.install_dir).expect("failed to create install dir");
+    build(&metadata);
+
+    println!("cargo:root={}", metadata.install_dir.display());
+}
+
+#[cfg(unix)]
+fn build(metadata: &Metadata) {
     // Configure.
     {
         let mut cppflags = env::var("CPPFLAGS").ok().unwrap_or_else(String::new);
@@ -43,7 +63,7 @@ fn main() {
         }
 
         let mut configure_args = vec![
-            format!("--prefix={}", install_dir.display()),
+            format!("--prefix={}", metadata.install_dir.display()),
             "--enable-static".into(),
             "--disable-shared".into(),
             #[cfg(feature = "nls")]
@@ -55,13 +75,13 @@ fn main() {
         ];
 
         // If we're cross-compiling, let configure know.
-        if host != target {
-            configure_args.push(format!("--host={}", target));
+        if metadata.host != metadata.target {
+            configure_args.push(format!("--host={}", metadata.target));
         }
 
         let configure_path = Path::new("krb5").join("src").join("configure");
         cmd(configure_path, &configure_args)
-            .dir(&build_dir)
+            .dir(&metadata.build_dir)
             .run()
             .expect("configure failed");
     }
@@ -95,7 +115,7 @@ fn main() {
         // Hack our way through building just the libraries, and not any of the
         // utility programs. This avoids a dependency on Yacc.
         cmd!("make", "install-mkdirs")
-            .dir(&build_dir)
+            .dir(&metadata.build_dir)
             .run()
             .expect("install-mkdirs failed");
         for dir in &[
@@ -112,13 +132,51 @@ fn main() {
         ] {
             for target in &["all", "install"] {
                 cmd!("make", target)
-                    .dir(&build_dir.join(dir))
+                    .dir(&metadata.build_dir.join(dir))
                     .env("MAKEFLAGS", &make_flags)
                     .run()
                     .unwrap_or_else(|_| panic!("make failed in {}", dir));
             }
         }
     }
+}
 
-    println!("cargo:root={}", install_dir.display());
+#[cfg(windows)]
+fn build(metadata: &Metadata) {
+    if metadata.host != metadata.target {
+        panic!("cross-compilation on a Windows host is not supported");
+    }
+
+    // The Windows build system doesn't seem to support out-of-tree builds, so
+    // copy the source tree into the build directory since we're not allowed to
+    // build in the checkout directly.
+    let output = cmd!("robocopy", "krb5\\src", &metadata.build_dir, "/s", "/e")
+        .unchecked()
+        .run()
+        .unwrap_or_else(|e| panic!("copying source tree failed: {}", e));
+    // https://docs.microsoft.com/en-us/troubleshoot/windows-server/backup-and-storage/return-codes-used-robocopy-utility
+    if !matches!(output.status.code(), Some(0..=7)) {
+        panic!("copying source tree failed: {:?}", output);
+    }
+
+    let nmake = |args: &[&str]| {
+        cmd("nmake", args)
+            .dir(&metadata.build_dir)
+            .env("KRB_INSTALL_DIR", &metadata.install_dir)
+    };
+
+    // Prepare Windows Makefile.
+    nmake(&["-f", "Makefile.in", "prep-windows"])
+        .run()
+        .unwrap_or_else(|e| panic!("nmake prep failed: {}", e));
+
+    // Build.
+    nmake(&[])
+        .run()
+        .unwrap_or_else(|e| panic!("nmake build failed: {}", e));
+
+    // Install.
+    nmake(&["install"])
+        .run()
+        .unwrap_or_else(|e| panic!("nmake install failed: {}", e));
 }
