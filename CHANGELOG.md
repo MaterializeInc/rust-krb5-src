@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to [Semantic
 Versioning].
 
+<!-- #release:next-header -->
+
+## [Unreleased] <!-- #release:date -->
+
 ## [0.3.1+1.19.2] - 2021-12-22
 
 * Incorporate a patch to remove an errant linker flag that was breaking
@@ -60,14 +64,16 @@ Versioning].
 
 Initial release.
 
-[0.1.1+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.1.0+1.18.1...v0.1.1+1.18.1
-[0.2.0+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.1.1+1.18.1...v0.2.0+1.18.1
-[0.2.1+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.0+1.18.1...v0.2.1+1.18.1
-[0.2.2+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.1+1.18.1...v0.2.2+1.18.1
-[0.2.3+1.18.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.2+1.18.1...v0.2.3+1.18.2
-[0.2.4+1.18.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.3+1.18.2...v0.2.4+1.18.2
-[0.3.0+1.19.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.4+1.18.2...v0.3.0+1.19.2
+<!-- #release:next-url -->
+[Unreleased]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.1+1.19.2...HEAD
 [0.3.1+1.19.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.0+1.19.2...v0.3.1+1.19.2
+[0.3.0+1.19.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.4+1.18.2...v0.3.0+1.19.2
+[0.2.4+1.18.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.3+1.18.2...v0.2.4+1.18.2
+[0.2.3+1.18.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.2+1.18.1...v0.2.3+1.18.2
+[0.2.2+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.1+1.18.1...v0.2.2+1.18.1
+[0.2.1+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.0+1.18.1...v0.2.1+1.18.1
+[0.2.0+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.1.1+1.18.1...v0.2.0+1.18.1
+[0.1.1+1.18.1]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.1.0+1.18.1...v0.1.1+1.18.1
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
