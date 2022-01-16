@@ -9,7 +9,7 @@ Versioning].
 
 ## [Unreleased] <!-- #release:date -->
 
-* Support building on Windows (#16).
+* Support building on Windows ([#16]).
 
 * Make the `openssl-sys` dependency optional unless the `openssl-vendored`
   feature is enabled.
@@ -24,7 +24,7 @@ Versioning].
 * Upgrade to libkrb5 v1.19.2.
 
 * Drop the `--disable-aesni` configuration flag as the option no longer causes
-  static compilation to fail. See [#1] for details.
+  static compilation to fail. See [#4] for details.
 
 ## [0.2.4+1.18.2] - 2020-07-08
 
@@ -41,7 +41,7 @@ Versioning].
 
 * Configure libkrb5 with `--disable-aesni`, which disables use of the AES-NI
   instruction set, as libkrb5's AES-NI support is currently broken when
-  compiling statically. Follow [#1] for details.
+  compiling statically. Follow [#4] for details.
 
 ## [0.2.1+1.18.1] - 2020-05-03
 
@@ -84,4 +84,5 @@ Initial release.
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 [krb5/krb5#1233]: https://github.com/krb5/krb5/pull/1233
 
+[#4]: https://github.com/MaterializeInc/rust-krb5-src/issues/4
 [#16]: https://github.com/MaterializeInc/rust-krb5-src/issues/16
