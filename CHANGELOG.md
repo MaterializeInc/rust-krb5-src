@@ -9,6 +9,8 @@ Versioning].
 
 ## [Unreleased] <!-- #release:date -->
 
+## [0.3.2+1.19.2] - 2022-01-16
+
 * Support building on Windows ([#16]).
 
 * Make the `openssl-sys` dependency optional unless the `openssl-vendored`
@@ -70,7 +72,8 @@ Versioning].
 Initial release.
 
 <!-- #release:next-url -->
-[Unreleased]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.1+1.19.2...HEAD
+[Unreleased]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.2+1.19.2...HEAD
+[0.3.2+1.19.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.1+1.19.2...v0.3.2+1.19.2
 [0.3.1+1.19.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.0+1.19.2...v0.3.1+1.19.2
 [0.3.0+1.19.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.4+1.18.2...v0.3.0+1.19.2
 [0.2.4+1.18.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.2.3+1.18.2...v0.2.4+1.18.2
