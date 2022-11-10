@@ -56,6 +56,8 @@ fn build(metadata: &Metadata) {
         // Some platforms require that we explicitly request
         // position-independent code in our static libraries.
         cflags += " -fPIC";
+        let compiler = cc::Build::new().get_compiler();
+        let CC = compiler.path();
 
         // If OpenSSL has been vendored, point libkrb5 at the vendored headers.
         if let Ok(openssl_root) = env::var("DEP_OPENSSL_ROOT") {
@@ -72,16 +74,23 @@ fn build(metadata: &Metadata) {
             "--disable-nls".into(),
             format!("CPPFLAGS={}", cppflags),
             format!("CFLAGS={}", cflags),
+            format!("CC={}", CC.to_str().unwrap_or_default())
         ];
 
         // If we're cross-compiling, let configure know.
         if metadata.host != metadata.target {
+            configure_args.push(format!("--build={}", metadata.host));
             configure_args.push(format!("--host={}", metadata.target));
         }
 
         let configure_path = Path::new("krb5").join("src").join("configure");
         cmd(configure_path, &configure_args)
             .dir(&metadata.build_dir)
+            .env("krb5_cv_attr_constructor_destructor", "yes")
+            .env("ac_cv_func_regcomp", "yes")
+            .env("ac_cv_printf_positional", "yes")
+            .env("ac_cv_printf_positional", "yes")
+            .env("krb5_cv_system_ss_okay", "assumed")
             .run()
             .expect("configure failed");
     }
