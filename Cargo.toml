@@ -19,6 +19,7 @@ openssl-sys = { version = "0.9.55", optional = true }
 
 [build-dependencies]
 duct = "0.13.3"
+cc = "1.0.50"
 
 [features]
 binaries = []
