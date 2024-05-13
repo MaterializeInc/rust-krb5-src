@@ -82,6 +82,7 @@ fn build(metadata: &Metadata) {
         let configure_path = Path::new("krb5").join("src").join("configure");
         cmd(configure_path, &configure_args)
             .dir(&metadata.build_dir)
+            .env_remove("CONFIG_SITE")
             .run()
             .expect("configure failed");
     }

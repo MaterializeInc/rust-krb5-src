@@ -9,6 +9,12 @@ Versioning].
 
 ## [Unreleased] <!-- #release:date -->
 
+* Ignore the `CONFIG_SITE` environment variable when running configuration.
+  Site-specific configuration is generally not relevant when building with
+  Cargo and can lead to installations that are not laid out in the way
+  this crate's build script expects. See [MaterializeInc/rust-sasl#49]
+  for details.
+
 ## [0.3.2+1.19.2] - 2022-01-16
 
 * Support building on Windows ([#16]).
@@ -86,6 +92,7 @@ Initial release.
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 [krb5/krb5#1233]: https://github.com/krb5/krb5/pull/1233
+[MaterializeInc/rust-sasl#49]: https://github.com/MaterializeInc/rust-sasl/pull/49
 
 [#4]: https://github.com/MaterializeInc/rust-krb5-src/issues/4
 [#16]: https://github.com/MaterializeInc/rust-krb5-src/issues/16
