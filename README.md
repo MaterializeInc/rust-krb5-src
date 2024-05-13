@@ -13,8 +13,8 @@ Rust build system integration for [libkrb5], MIT's Kerberos implementation.
 ```toml
 # Cargo.toml
 [dependencies]
-krb5-src = "0.3.2+1.19.2"
+krb5-src = "0.3.3"
 ```
 
 [libkrb5]: https://web.mit.edu/kerberos/
-[docs]: https://docs.rs/krb5-src/0.3.2+1.19.2/krb5_src
+[docs]: https://docs.rs/krb5-src/0.3.3/krb5_src
