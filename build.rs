@@ -17,9 +17,11 @@ use std::env;
 #[cfg(unix)]
 use std::ffi::OsString;
 use std::fs;
+use std::io::{stderr, Write};
 #[cfg(unix)]
 use std::path::Path;
 use std::path::PathBuf;
+use std::str;
 
 use duct::cmd;
 
@@ -28,6 +30,36 @@ struct Metadata {
     target: String,
     build_dir: PathBuf,
     install_dir: PathBuf,
+}
+
+impl Metadata {
+    fn is_cross_compiling(&self) -> bool {
+        self.host != self.target
+    }
+
+    fn get_target_env(&self, name: &str) -> Option<String> {
+        if self.is_cross_compiling() {
+            env::var(format!("{}_{}", name, self.target.replace("-", "_"))).ok()
+        } else {
+            env::var(name).ok()
+        }
+    }
+}
+
+trait DuctExpressionExt: Sized {
+    fn set_target_env_vars(self, metadata: &Metadata) -> Self;
+}
+
+impl DuctExpressionExt for duct::Expression {
+    fn set_target_env_vars(mut self, metadata: &Metadata) -> Self {
+        if let Some(target_cc) = metadata.get_target_env("CC") {
+            self = self.env("CC", target_cc)
+        }
+        if let Some(target_ar) = metadata.get_target_env("AR") {
+            self = self.env("AR", target_ar)
+        }
+        self
+    }
 }
 
 fn main() {
@@ -49,6 +81,7 @@ fn main() {
 #[cfg(unix)]
 fn build(metadata: &Metadata) {
     // Configure.
+
     {
         let mut cppflags = env::var("CPPFLAGS").ok().unwrap_or_else(String::new);
         let mut cflags = env::var("CFLAGS").ok().unwrap_or_else(String::new);
@@ -75,16 +108,42 @@ fn build(metadata: &Metadata) {
         ];
 
         // If we're cross-compiling, let configure know.
-        if metadata.host != metadata.target {
+        if metadata.is_cross_compiling() {
+            configure_args.push(format!("--build={}", metadata.host));
+            // `--host` is the target platform in autotools parlance, not the
+            // host platform.
             configure_args.push(format!("--host={}", metadata.target));
         }
 
         let configure_path = Path::new("krb5").join("src").join("configure");
-        cmd(configure_path, &configure_args)
+
+        let configure = cmd(configure_path, &configure_args)
             .dir(&metadata.build_dir)
-            .env_remove("CONFIG_SITE")
-            .run()
-            .expect("configure failed");
+            .set_target_env_vars(metadata)
+            .env_remove("CONFIG_SITE");
+        let configure_output = configure.stderr_capture().unchecked().run().unwrap();
+        let _ = stderr().write_all(&configure_output.stderr);
+        if !configure_output.status.success() && metadata.is_cross_compiling() {
+            if let Ok(s) = str::from_utf8(&configure_output.stderr) {
+                let last_error = s.trim_end();
+                if last_error.ends_with(
+                    "Cannot test for constructor/destructor support when cross compiling",
+                ) {
+                    eprintln!("set krb5_cv_attr_constructor_destructor={{yes|no}} in the environment to skip this test");
+                }
+                if last_error.ends_with("Cannot test regcomp when cross compiling") {
+                    eprintln!(
+                        "set ac_cv_func_regcomp={{yes|no}} in the environment to skip this test"
+                    );
+                }
+                if last_error.ends_with(
+                    "Cannot test for printf positional argument support when cross compiling",
+                ) {
+                    eprintln!("set ac_cv_printf_positional={{yes|no}} in the environment to skip this test");
+                }
+            }
+            panic!("configure failed");
+        }
     }
 
     // Make.
@@ -117,6 +176,7 @@ fn build(metadata: &Metadata) {
         // utility programs. This avoids a dependency on Yacc.
         cmd!("make", "install-mkdirs")
             .dir(&metadata.build_dir)
+            .set_target_env_vars(metadata)
             .run()
             .expect("install-mkdirs failed");
         for dir in &[
@@ -133,7 +193,8 @@ fn build(metadata: &Metadata) {
         ] {
             for target in &["all", "install"] {
                 cmd!("make", target)
-                    .dir(&metadata.build_dir.join(dir))
+                    .dir(metadata.build_dir.join(dir))
+                    .set_target_env_vars(metadata)
                     .env("MAKEFLAGS", &make_flags)
                     .run()
                     .unwrap_or_else(|_| panic!("make failed in {}", dir));
