@@ -9,6 +9,8 @@ Versioning].
 
 ## [Unreleased] <!-- #release:date -->
 
+## [0.3.4] - 2024-10-04
+
 * When cross compiling, use the compiler and archiver specified in the
   `CC_<target>` and `AR_<target>` environment variables, respectively, if
   present.
@@ -84,7 +86,8 @@ Versioning].
 Initial release.
 
 <!-- #release:next-url -->
-[Unreleased]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.3...HEAD
+[Unreleased]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.4...HEAD
+[0.3.4]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.2+1.19.2...v0.3.3
 [0.3.2+1.19.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.1+1.19.2...v0.3.2+1.19.2
 [0.3.1+1.19.2]: https://github.com/MaterializeInc/rust-krb5-src/compare/v0.3.0+1.19.2...v0.3.1+1.19.2
