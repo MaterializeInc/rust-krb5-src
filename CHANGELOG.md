@@ -9,6 +9,10 @@ Versioning].
 
 ## [Unreleased] <!-- #release:date -->
 
+* When cross compiling, use the compiler and archiver specified in the
+  `CC_<target>` and `AR_<target>` environment variables, respectively, if
+  present.
+
 ## [0.3.3] - 2024-05-13
 
 * Ignore the `CONFIG_SITE` environment variable when running configuration.
