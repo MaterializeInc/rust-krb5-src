@@ -58,6 +58,15 @@ impl DuctExpressionExt for duct::Expression {
         if let Some(target_ar) = metadata.get_target_env("AR") {
             self = self.env("AR", target_ar)
         }
+
+        if metadata.is_cross_compiling() {
+            // disable running tests if we are cross compiling
+            self = self
+                .env("krb5_cv_attr_constructor_destructor", "yes")
+                .env("ac_cv_func_regcomp", "yes")
+                .env("ac_cv_printf_positional", "yes");
+        }
+
         self
     }
 }
